@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tt"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Шүрәле</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#10231a;--fg:#e9f3ea;--card:#1b3527;--bd:#2f5a43;--ok:#3cb371;--bad:#e05a4f;--acc:#f0b429}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.35 system-ui,sans-serif;max-width:520px;margin:auto;padding:0 16px 24px}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 0}h1{font-size:20px;margin:0}a{color:inherit}
+.forest{position:relative;height:130px;border-radius:14px;overflow:hidden;background:linear-gradient(#173b2a,#0c1f16);border:1px solid var(--bd)}
+.trees{position:absolute;inset:0;font-size:34px;letter-spacing:6px;white-space:nowrap;opacity:.55;top:10px}
+.path{position:absolute;left:0;right:0;bottom:18px;height:6px;background:#5b4a32;border-radius:3px}
+.who{position:absolute;bottom:22px;transition:left .5s ease;font-size:38px;transform:translateX(-50%)}
+#hero span{display:inline-block;transform:scaleX(-1)}#home{right:4px;left:auto;transform:none}
+.bar{display:flex;justify-content:space-between;margin:10px 0;font-weight:600}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center}
+.word{font-size:30px;font-weight:800;margin:4px 0}.lat{opacity:.6;font-size:14px}
+.timer{height:6px;background:var(--bd);border-radius:3px;margin:12px 0;overflow:hidden}.timer i{display:block;height:100%;background:var(--acc)}
+.opts{display:grid;gap:10px;margin-top:12px}
+.opt{padding:14px;border-radius:12px;border:2px solid var(--bd);background:var(--card);color:var(--fg);font-size:18px}
+.opt.good{border-color:var(--ok);background:#1f5a3a}.opt.bad{border-color:var(--bad);background:#5a2320}
+button.main{width:100%;padding:14px;border:0;border-radius:12px;background:var(--acc);color:#1b1b1b;font-size:17px;font-weight:700;margin-top:14px}
+.center{text-align:center}.big{font-size:64px}
+</style></head><body>
+<header><a href="index.html">← Уеннар</a><h1>Шүрәле</h1><span id="lv"></span></header>
+<div class="forest"><div class="trees">🌲🌳🌲🌲🌳🌲🌲🌳🌲🌲🌳🌲</div><div class="path"></div>
+<div class="who" id="shu"><svg width="40" height="52" viewBox="0 0 40 52"><g fill="#7a5a3a" stroke="#3b2a1a" stroke-width="1.5">
+<ellipse cx="20" cy="14" rx="9" ry="11"/><rect x="16" y="23" width="8" height="18" rx="3"/>
+<path d="M16 27 L4 20 L1 12 M4 20 L0 18 M4 20 L2 24" fill="none" stroke-width="2.5"/>
+<path d="M24 27 L36 20 L39 12 M36 20 L40 18 M36 20 L38 24" fill="none" stroke-width="2.5"/>
+<path d="M18 41 L14 51 M22 41 L26 51" fill="none" stroke-width="3"/><path d="M14 3 L10 -2 M26 3 L30 -2" stroke-width="2.5"/></g>
+<circle cx="16" cy="13" r="2" fill="#f0b429"/><circle cx="24" cy="13" r="2" fill="#f0b429"/></svg></div>
+<div class="who" id="hero"><span>🏃</span></div><div class="who" id="home">🏡</div></div>
+<div class="bar"><span id="dist"></span><span id="sc"></span></div>
+<div id="app"></div>
+<script>
+const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
+const W=[["урман","лес"],["агач","дерево"],["куян","заяц"],["төлке","лиса"],["аю","медведь"],["бүре","волк"],["кош","птица"],
+["елга","река"],["күл","озеро"],["тау","гора"],["кояш","солнце"],["ай","луна"],["йолдыз","звезда"],["яңгыр","дождь"],
+["кар","снег"],["җил","ветер"],["су","вода"],["ут","огонь"],["таш","камень"],["чәчәк","цветок"],["яфрак","лист"],
+["гөмбә","гриб"],["җиләк","ягода"],["юл","дорога"],["авыл","деревня"],["өй","дом"],["ишек","дверь"],["тәрәзә","окно"],
+["ат","лошадь"],["сыер","корова"],["эт","собака"],["песи","кошка"],["баш","голова"],["кул","рука"],["аяк","нога"],
+["күз","глаз"],["колак","ухо"],["тиз","быстро"],["әкрен","медленно"],["зур","большой"],["кечкенә","маленький"],
+["курку","страх"],["кыю","смелый"],["көч","сила"],["төн","ночь"],["көн","день"],["иртә","утро"],["кич","вечер"]];
+const LAT={"а":"a","ә":"ä","б":"b","в":"v","г":"g","д":"d","е":"e","ж":"j","җ":"c","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","ң":"ñ","о":"o","ө":"ö","п":"p","р":"r","с":"s","т":"t","у":"u","ү":"ü","ф":"f","х":"x","һ":"h","ч":"ç","ш":"ş","ы":"ı","э":"e","ю":"yu","я":"ya"};
+const lat=w=>[...w].map(c=>LAT[c]??c).join("");
+let hero,shu,score,level,timer,qStart,qTime,pool;
+const app=document.getElementById("app"),H=document.getElementById("hero"),S=document.getElementById("shu");
+function place(){H.style.left=(8+hero*0.8)+"%";S.style.left=(4+shu*0.8)+"%";
+ document.getElementById("dist").textContent=`До деревни: ${Math.max(0,100-Math.round(hero))} м`;
+ document.getElementById("sc").textContent=`⭐ ${score}`;document.getElementById("lv").textContent=`Ур. ${level}`}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){hero=22;shu=0;score=0;level=1;pool=shuffle([...W]);next()}
+function next(){if(!pool.length)pool=shuffle([...W]);const [tt,ru]=pool.pop();
+ const wrong=shuffle(W.filter(x=>x[1]!==ru)).slice(0,level>2?3:2).map(x=>x[1]);
+ const opts=shuffle([ru,...wrong]);qTime=Math.max(3000,7000-level*800);qStart=Date.now();
+ app.innerHTML=`<div class="q"><div>Что значит?</div><div class="word">${tt}</div><div class="lat">${lat(tt)}</div>
+ <div class="timer"><i id="tb"></i></div><div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join("")}</div></div>`;
+ app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(b,b.textContent===ru,ru));
+ clearInterval(timer);timer=setInterval(()=>{const left=1-(Date.now()-qStart)/qTime;
+  document.getElementById("tb").style.width=Math.max(0,left*100)+"%";
+  shu+=0.12*level;place();if(shu>=hero)return lose();if(left<=0)answer(null,false,ru)},100);place()}
+function answer(b,ok,ru){clearInterval(timer);app.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(x.textContent===ru)x.classList.add("good")});
+ if(ok){hero+=9;score+=10*level;tg?.HapticFeedback?.impactOccurred("light")}
+ else{if(b)b.classList.add("bad");shu+=10;tg?.HapticFeedback?.notificationOccurred("error")}
+ place();if(shu>=hero)return setTimeout(lose,500);if(hero>=100)return setTimeout(win,500);setTimeout(next,ok?500:1100)}
+function win(){clearInterval(timer);score+=50;place();
+ app.innerHTML=`<div class="center"><div class="big">🏡🎉</div><h2>Котылдың! Ты спасся!</h2>
+ <p>Шүрәле остался в лесу. ⭐ ${score}</p><button class="main" id="nx">Следующий уровень — быстрее!</button></div>`;
+ document.getElementById("nx").onclick=()=>{level++;hero=22;shu=0;next()}}
+function lose(){clearInterval(timer);let best=0;try{best=+localStorage.getItem("shu_best")||0;if(score>best)localStorage.setItem("shu_best",score)}catch(e){}
+ app.innerHTML=`<div class="center"><div class="big">🌲😱🌲</div><h2>Шүрәле тотты! Шурале поймал!</h2>
+ <p>⭐ Очки: ${score}<br>🏆 Рекорд: ${Math.max(best,score)}</p><button class="main" id="ag">Кабат уйнарга — Ещё раз</button></div>`;
+ document.getElementById("ag").onclick=start}
+hero=22;shu=0;score=0;level=1;place();
+app.innerHTML=`<div class="center"><h2>Урманда Шүрәле!</h2>
+<p>Вы заблудились в лесу, а за вами гонится Шурале. Выбирайте правильный перевод татарского слова — и бегите к деревне!</p>
+<p>✅ Верно — шаг вперёд<br>❌ Ошибка или долгий ответ — Шурале ближе</p><button class="main" id="go">Йөгер! — Беги!</button></div>`;
+document.getElementById("go").onclick=start;
+</script></body></html>
