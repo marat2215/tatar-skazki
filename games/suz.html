@@ -3,6 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Сүз уены</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="common.js"></script>
 <style>
 :root{--bg:#f6f3ec;--fg:#1f2a24;--tile:#fff;--bd:#cfc8b8;--ok:#2e8b57;--mid:#d4a017;--no:#8a8f8c;--key:#e4ddcc}
 @media(prefers-color-scheme:dark){:root{--bg:#161b18;--fg:#eef2ee;--tile:#222a25;--bd:#3c463f;--key:#2f3833}}
@@ -21,51 +22,74 @@ h1{font-size:20px;margin:0}a,button{color:inherit}.help{background:none;border:1
 #rules{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:16px}
 #rules div{background:var(--bg);border-radius:12px;padding:16px;max-width:420px}
 </style></head><body>
-<header><a href="index.html">← Уеннар</a><h1>Сүз уены</h1><button class="help" onclick="rules.style.display='flex'">?</button></header>
+<header><a id="back" href="index.html"></a><h1 id="title"></h1><button class="help" onclick="rules.style.display='flex'">?</button></header>
 <div id="msg"></div><div id="grid"></div><div id="end"></div><div id="kb"></div>
-<div id="rules" onclick="this.style.display='none'"><div>
-<b>Как играть</b><p>Угадайте татарское слово из 5 букв за 6 попыток.</p>
-<p>🟩 буква на своём месте<br>🟨 буква есть в слове, но в другом месте<br>⬜ буквы нет в слове</p>
-<p>Новое слово — каждый день. Нажмите, чтобы закрыть.</p></div></div>
+<div id="rules" onclick="this.style.display='none'"><div id="rtext"></div></div>
 <script>
+// [слово, ru, en, tr, fi]
 const WORDS=[
-["китап","книга"],["урман","лес"],["чәчәк","цветок"],["балык","рыба"],["бакча","сад"],["бәлеш","бэлиш"],
-["калач","калач"],["сабын","мыло"],["шикәр","сахар"],["бүрек","шапка"],["тавык","курица"],["дәрес","урок"],
-["тимер","железо"],["көмеш","серебро"],["алтын","золото"],["болыт","облако"],["яңгыр","дождь"],["бозау","телёнок"],
-["бәрән","ягнёнок"],["туган","родной"],["күңел","душа"],["гаилә","семья"],["бабай","дедушка"],["кунак","гость"],
-["катык","катык"],["суган","лук"],["аккош","лебедь"],["табын","застолье"],["күрше","сосед"],["шәһәр","город"],
-["кабак","тыква"],["чиләк","ведро"],["сөлге","полотенце"],["бишек","колыбель"]];
+["китап","книга","book","kitap","kirja"],["урман","лес","forest","orman","metsä"],["чәчәк","цветок","flower","çiçek","kukka"],
+["балык","рыба","fish","balık","kala"],["бакча","сад","garden","bahçe","puutarha"],["бәлеш","бэлиш (пирог)","belesh (pie)","belesh (etli turta)","belesh-piirakka"],
+["калач","калач","kalach (bread)","kalaç (çörek)","kalatš-leipä"],["сабын","мыло","soap","sabun","saippua"],["шикәр","сахар","sugar","şeker","sokeri"],
+["бүрек","шапка","hat","şapka","hattu"],["тавык","курица","hen","tavuk","kana"],["дәрес","урок","lesson","ders","oppitunti"],
+["тимер","железо","iron","demir","rauta"],["көмеш","серебро","silver","gümüş","hopea"],["алтын","золото","gold","altın","kulta"],
+["болыт","облако","cloud","bulut","pilvi"],["яңгыр","дождь","rain","yağmur","sade"],["бозау","телёнок","calf","buzağı","vasikka"],
+["бәрән","ягнёнок","lamb","kuzu","karitsa"],["җиләк","ягода","berry","çilek","marja"],["күңел","душа","soul","gönül","sielu"],
+["гаилә","семья","family","aile","perhe"],["бабай","дедушка","grandfather","dede","isoisä"],["кунак","гость","guest","misafir","vieras"],
+["катык","катык (кисломолочный напиток)","katyk (sour milk)","katık (ayran)","hapanmaito"],["суган","лук","onion","soğan","sipuli"],
+["аккош","лебедь","swan","kuğu","joutsen"],["табын","застолье","feast table","sofra","juhlapöytä"],["күрше","сосед","neighbour","komşu","naapuri"],
+["шәһәр","город","city","şehir","kaupunki"],["кабак","тыква","pumpkin","kabak","kurpitsa"],["чиләк","ведро","bucket","kova","ämpäri"],
+["сөлге","полотенце","towel","havlu","pyyhe"],["бишек","колыбель","cradle","beşik","kehto"]];
+const LI={ru:1,en:2,tr:3,fi:4}[LANG];
+const T={
+ need5:{ru:"Нужно 5 букв",en:"Need 5 letters",tr:"5 harf gerekli",fi:"Tarvitaan 5 kirjainta"},
+ win:{ru:"Булдырдың! 🎉",en:"Buldırdıñ! You did it! 🎉",tr:"Buldırdıñ! Bildin! 🎉",fi:"Buldırdıñ! Onnistuit! 🎉"},
+ lose:{ru:"Бу юлы булмады 😔",en:"Not this time 😔",tr:"Bu sefer olmadı 😔",fi:"Ei tällä kertaa 😔"},
+ word:{ru:"Слово",en:"Word",tr:"Kelime",fi:"Sana"},
+ share:{ru:"Поделиться результатом",en:"Share result",tr:"Sonucu paylaş",fi:"Jaa tulos"},
+ tomorrow:{ru:"Новое слово — завтра!",en:"New word tomorrow!",tr:"Yeni kelime yarın!",fi:"Uusi sana huomenna!"},
+ copied:{ru:"Скопировано!",en:"Copied!",tr:"Kopyalandı!",fi:"Kopioitu!"},
+ rules:{ru:"<b>Как играть</b><p>Угадайте татарское слово из 5 букв за 6 попыток.</p><p>🟩 буква на своём месте<br>🟨 буква есть в слове, но в другом месте<br>⬜ буквы нет в слове</p><p>Новое слово каждый день. Нажмите, чтобы закрыть.</p>",
+  en:"<b>How to play</b><p>Guess the 5-letter Tatar word in 6 tries.</p><p>🟩 letter in the right place<br>🟨 letter is in the word, but elsewhere<br>⬜ letter is not in the word</p><p>A new word every day. Tap to close.</p>",
+  tr:"<b>Nasıl oynanır</b><p>5 harfli Tatarca kelimeyi 6 denemede bul.</p><p>🟩 harf doğru yerde<br>🟨 harf kelimede var ama başka yerde<br>⬜ harf kelimede yok</p><p>Her gün yeni kelime. Kapatmak için dokun.</p>",
+  fi:"<b>Näin pelaat</b><p>Arvaa 5-kirjaiminen tataarinkielinen sana 6 yrityksellä.</p><p>🟩 kirjain oikealla paikalla<br>🟨 kirjain on sanassa, mutta eri kohdassa<br>⬜ kirjainta ei ole sanassa</p><p>Uusi sana joka päivä. Sulje napauttamalla.</p>"}};
+const LATIN=ALPHA==="lat";
+const conv=w=>LATIN?lat(w).toLowerCase():w;
+const POOL=WORDS.filter(w=>[...conv(w[0])].length===5);
 const START=new Date(2026,9,1);const day=Math.floor((new Date()-START)/864e5);
-const [ANS,TR]=WORDS[((day%WORDS.length)+WORDS.length)%WORDS.length];
-const ROWS=[["й","ө","у","к","е","н","г","ш","ә","з","х","һ"],["ф","ы","в","а","п","р","о","л","д","ж","ң","э"],["ENTER","я","ч","с","м","и","т","җ","б","ь","ү","ю","⌫"]];
-const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
-let row=0,cur="",done=false,keyState={};
+const PICK=POOL[((day%POOL.length)+POOL.length)%POOL.length];
+const ANS=conv(PICK[0]),TR=PICK[LI];
+const ROWS=LATIN?[["q","w","e","r","t","y","u","ı","i","o","p"],["a","ä","s","d","f","g","ğ","h","j","k","l"],["ENTER","z","x","c","ç","v","b","n","ñ","m","⌫"],["ö","ü","ş"]]
+ :[["й","ө","у","к","е","н","г","ш","ә","з","х","һ"],["ф","ы","в","а","п","р","о","л","д","ж","ң","э"],["ENTER","я","ч","с","м","и","т","җ","б","ь","ү","ю","⌫"]];
+document.getElementById("title").textContent=tt("Сүз уены");
+document.getElementById("back").textContent=ui(UI.back);document.getElementById("back").href="index.html"+QS;
+document.getElementById("rtext").innerHTML=ui(T.rules);
+let row=0,cur="",done=false,keyState={};const hist=[];
 const grid=document.getElementById("grid"),kb=document.getElementById("kb"),msg=document.getElementById("msg");
 for(let r=0;r<6;r++){const d=document.createElement("div");d.className="row";for(let c=0;c<5;c++){const t=document.createElement("div");t.className="t";d.appendChild(t)}grid.appendChild(d)}
 function drawKb(){kb.innerHTML="";ROWS.forEach(r=>{const d=document.createElement("div");d.className="kr";r.forEach(k=>{const b=document.createElement("button");b.className="k"+(k.length>1?" w":"")+(keyState[k]?" "+keyState[k]:"");b.textContent=k==="ENTER"?"✓":k;b.onclick=()=>press(k);d.appendChild(b)});kb.appendChild(d)})}
-function tiles(r){return grid.children[r].children}
-function show(){[...tiles(row)].forEach((t,i)=>t.textContent=cur[i]||"")}
+const tiles=r=>grid.children[r].children;
+function show(){[...tiles(row)].forEach((t,i)=>t.textContent=[...cur][i]||"")}
 function say(s){msg.textContent=s;if(s)setTimeout(()=>{if(msg.textContent===s)msg.textContent=""},2000)}
-function press(k){if(done)return;tg?.HapticFeedback?.selectionChanged();
- if(k==="⌫")cur=cur.slice(0,-1);else if(k==="ENTER")return submit();else if([...cur].length<5)cur+=k;show()}
-function submit(){const g=[...cur];if(g.length<5)return say("Нужно 5 букв");
+function press(k){if(done)return;haptic();
+ if(k==="⌫")cur=[...cur].slice(0,-1).join("");else if(k==="ENTER")return submit();else if([...cur].length<5)cur+=k;show()}
+function submit(){const g=[...cur];if(g.length<5)return say(ui(T.need5));
  const a=[...ANS],res=Array(5).fill("no"),left={};
  a.forEach((ch,i)=>{if(g[i]===ch)res[i]="ok";else left[ch]=(left[ch]||0)+1});
  g.forEach((ch,i)=>{if(res[i]!=="ok"&&left[ch]){res[i]="mid";left[ch]--}});
  const rank={no:1,mid:2,ok:3};
  [...tiles(row)].forEach((t,i)=>{setTimeout(()=>t.classList.add(res[i]),i*150);const s=keyState[g[i]];if(!s||rank[res[i]]>rank[s])keyState[g[i]]=res[i]});
- setTimeout(drawKb,800);history.push(res);
- if(cur===ANS){done=true;tg?.HapticFeedback?.notificationOccurred("success");return setTimeout(()=>finish(true),900)}
+ setTimeout(drawKb,800);hist.push(res);
+ if(cur===ANS){done=true;haptic("ok");return setTimeout(()=>finish(true),900)}
  row++;cur="";if(row===6){done=true;setTimeout(()=>finish(false),900)}}
-const history=[];
-function finish(win){const n=win?history.length:"X";
- const em=history.map(r=>r.map(x=>x==="ok"?"🟩":x==="mid"?"🟨":"⬜").join("")).join("\n");
+function finish(win){const n=win?hist.length:"X";
+ const em=hist.map(r=>r.map(x=>x==="ok"?"🟩":x==="mid"?"🟨":"⬜").join("")).join("\n");
  const text=`Сүз уены ${day+1} — ${n}/6\n${em}\n@TatarlargaBot`;
  const e=document.getElementById("end");e.style.display="block";
- e.innerHTML=`<p><b>${win?"Булдырдың! 🎉":"Бу юлы булмады 😔"}</b><br>Слово: <b>${ANS.toUpperCase()}</b> — ${TR}</p><button id="sh">Поделиться результатом</button><p>Новое слово — завтра!</p>`;
+ e.innerHTML=`<p><b>${ui(win?T.win:T.lose)}</b><br>${ui(T.word)}: <b>${ttFull(PICK[0]).toUpperCase()}</b> — ${TR}</p><button id="sh">${ui(T.share)}</button><p>${ui(T.tomorrow)}</p>`;
  document.getElementById("sh").onclick=()=>{const u="https://t.me/share/url?url="+encodeURIComponent("https://t.me/TatarlargaBot")+"&text="+encodeURIComponent(text);
-  if(tg?.openTelegramLink)tg.openTelegramLink(u);else if(navigator.share)navigator.share({text});else{navigator.clipboard?.writeText(text);say("Скопировано!")}}}
-document.addEventListener("keydown",e=>{if(e.key==="Enter")press("ENTER");else if(e.key==="Backspace")press("⌫");else if(/^[а-яәөүҗңһё]$/i.test(e.key))press(e.key.toLowerCase())});
+  if(TG?.openTelegramLink)TG.openTelegramLink(u);else if(navigator.share)navigator.share({text});else{navigator.clipboard?.writeText(text);say(ui(T.copied))}}}
+document.addEventListener("keydown",e=>{if(e.key==="Enter")press("ENTER");else if(e.key==="Backspace")press("⌫");else if(e.key.length===1&&ROWS.flat().includes(e.key.toLowerCase()))press(e.key.toLowerCase())});
 drawKb();
 try{if(!localStorage.getItem("suz_seen")){rules.style.display="flex";localStorage.setItem("suz_seen","1")}}catch(e){}
 </script></body></html>
