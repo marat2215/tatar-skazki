@@ -3,6 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Эчпочмак пешер</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="common.js"></script>
 <style>
 :root{--bg:#fbf4e6;--fg:#3a2a1a;--card:#fff;--bd:#e5d3b3;--acc:#c0632b;--ok:#2e8b57;--bad:#c0392b}
 @media(prefers-color-scheme:dark){:root{--bg:#1d1813;--fg:#f4ead9;--card:#2a221a;--bd:#4a3b2a}}
@@ -19,15 +20,33 @@ header{display:flex;justify-content:space-between;align-items:center;padding:10p
 button.main{width:100%;padding:14px;border:0;border-radius:12px;background:var(--acc);color:#fff;font-size:17px;font-weight:700;margin-top:14px}
 .center{text-align:center}.big{font-size:80px}
 </style></head><body>
-<header><a href="index.html">← Уеннар</a><h1>Эчпочмак пешер</h1><span id="hintBtn" style="cursor:pointer">🇷🇺</span></header>
+<header><a id="back" href="index.html">← Уеннар</a><h1 id="ttl">Эчпочмак пешер</h1><span id="hintBtn" style="cursor:pointer">💡</span></header>
 <div id="app"></div>
 <script>
-const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
+const tg=TG;
+const LI={ru:1,en:2,tr:3,fi:4}[LANG];
+const M=k=>ITEMS[k][LI];
+const L={
+ lvl:{ru:"Уровень",en:"Level",tr:"Seviye",fi:"Taso"},
+ put:{ru:"Положи: ",en:"Add: ",tr:"Ekle: ",fi:"Lisää: "},
+ tap:{ru:"Нажмите 💡 для подсказки",en:"Tap 💡 for a hint",tr:"İpucu için 💡",fi:"Vihje: napauta 💡"},
+ is:{ru:"это",en:"is",tr:"=",fi:"on"},need:{ru:"Нужно",en:"Needed",tr:"Gereken",fi:"Tarvitaan"},
+ well:{ru:"Молодец!",en:"Well done!",tr:"Aferin!",fi:"Hienoa!"},
+ tasty:{ru:"Очень вкусно!",en:"Very tasty!",tr:"Çok lezzetli!",fi:"Todella herkullista!"},
+ words:{ru:"Слова этого рецепта:",en:"Words from this recipe:",tr:"Bu tarifin kelimeleri:",fi:"Tämän reseptin sanat:"},
+ next:{ru:"Следующий рецепт ➡️",en:"Next recipe ➡️",tr:"Sonraki tarif ➡️",fi:"Seuraava resepti ➡️"},
+ sad:{ru:"Не расстраивайся, давай ещё раз!",en:"Don't worry, let's try again!",tr:"Üzülme, bir daha deneyelim!",fi:"Älä huoli, yritetään uudelleen!"},
+ again:{ru:"Начать заново",en:"Start again",tr:"Yeniden başla",fi:"Aloita alusta"},
+ intro1:{ru:"Бабушка по-татарски говорит, что положить. Выбирайте нужный продукт.",en:"Grandma says in Tatar what to add. Pick the right ingredient.",tr:"Büyükanne Tatarca ne ekleneceğini söylüyor. Doğru malzemeyi seç.",fi:"Mummo kertoo tataariksi, mitä lisätä. Valitse oikea ainesosa."},
+ intro2:{ru:"Не знаете слово — нажмите 💡 (очков будет меньше).<br>3 ошибки — игра окончена.",en:"Don't know a word? Tap 💡 (fewer points).<br>3 mistakes and the game is over.",tr:"Kelimeyi bilmiyor musun? 💡 düğmesine bas (daha az puan).<br>3 hata — oyun biter.",fi:"Et tiedä sanaa? Napauta 💡 (vähemmän pisteitä).<br>3 virhettä ja peli päättyy."},
+ go:{ru:"Начинаем!",en:"Let's go!",tr:"Başlayalım!",fi:"Aloitetaan!"}};
+document.getElementById("back").href="index.html"+QS;document.getElementById("back").textContent=ui(UI.back);
+document.getElementById("ttl").innerHTML=tt("Эчпочмак пешер");
 const ITEMS={
- камыр:["🫓","тесто"], ит:["🥩","мясо"], бәрәңге:["🥔","картошка"], суган:["🧅","лук"], тоз:["🧂","соль"],
- борыч:["🌶️","перец"], май:["🧈","масло"], су:["💧","вода"], он:["🌾","мука"], йомырка:["🥚","яйцо"],
- шикәр:["🍬","сахар"], бал:["🍯","мёд"], алма:["🍎","яблоко"], сөт:["🥛","молоко"], кыяр:["🥒","огурец"],
- кишер:["🥕","морковь"], дөге:["🍚","рис"], балык:["🐟","рыба"], чәй:["🍵","чай"], катык:["🥣","катык"]};
+ камыр:["🫓","тесто","dough","hamur","taikina"], ит:["🥩","мясо","meat","et","liha"], бәрәңге:["🥔","картошка","potato","patates","peruna"], суган:["🧅","лук","onion","soğan","sipuli"], тоз:["🧂","соль","salt","tuz","suola"],
+ борыч:["🌶️","перец","pepper","biber","pippuri"], май:["🧈","масло","butter","tereyağı","voi"], су:["💧","вода","water","su","vesi"], он:["🌾","мука","flour","un","jauho"], йомырка:["🥚","яйцо","egg","yumurta","kananmuna"],
+ шикәр:["🍬","сахар","sugar","şeker","sokeri"], бал:["🍯","мёд","honey","bal","hunaja"], алма:["🍎","яблоко","apple","elma","omena"], сөт:["🥛","молоко","milk","süt","maito"], кыяр:["🥒","огурец","cucumber","salatalık","kurkku"],
+ кишер:["🥕","морковь","carrot","havuç","porkkana"], дөге:["🍚","рис","rice","pirinç","riisi"], балык:["🐟","рыба","fish","balık","kala"], чәй:["🍵","чай","tea","çay","tee"], катык:["🥣","катык","katyk","katık","hapanmaito"]};
 const RECIPES=[
  {name:"Эчпочмак",dish:"🥟",steps:["камыр","ит","бәрәңге","суган","тоз"]},
  {name:"Бәлеш",dish:"🥧",steps:["камыр","ит","бәрәңге","суган","борыч","май"]},
@@ -43,32 +62,32 @@ function startLevel(){const r=RECIPES[lvl%RECIPES.length];const n=Math.min(6+lvl
  const others=shuffle(Object.keys(ITEMS).filter(k=>!r.steps.includes(k))).slice(0,Math.max(n-r.steps.length,3));
  level={r,opts:shuffle([...new Set([...r.steps,...others])]),bowl:[],phr:r.steps.map(()=>PHR[Math.floor(Math.random()*PHR.length)])};step=0;render()}
 function render(){const r=level.r,w=r.steps[step];
- app.innerHTML=`<div class="stat"><span>Уровень ${lvl+1}: ${r.name}</span><span>⭐ ${score} &nbsp; ${"❤️".repeat(lives)}</span></div>
- <div class="abi"><div class="face">👵</div><div><div class="say">${(p=>p.startsWith("{w}")?p.replace("{w}",w[0].toUpperCase()+w.slice(1)):p.replace("{w}",w))(level.phr[step])}</div>
- <div class="hint">${showRu?"Положи: "+ITEMS[w][1]:"Нажмите 🇷🇺 для подсказки"}</div></div></div>
+ app.innerHTML=`<div class="stat"><span>${ui(L.lvl)} ${lvl+1}: ${tt(r.name)}</span><span>⭐ ${score} &nbsp; ${"❤️".repeat(lives)}</span></div>
+ <div class="abi"><div class="face">👵</div><div><div class="say">${tt((p=>p.startsWith("{w}")?p.replace("{w}",w[0].toUpperCase()+w.slice(1)):p.replace("{w}",w))(level.phr[step]))}</div>
+ <div class="hint">${showRu?ui(L.put)+M(w):ui(L.tap)}</div></div></div>
  <div class="bowl">${level.bowl.map(k=>ITEMS[k][0]).join("")}</div>
- <div class="grid">${level.opts.map(k=>`<div class="it" data-k="${k}"><span class="e">${ITEMS[k][0]}</span>${k}</div>`).join("")}</div>`;
+ <div class="grid">${level.opts.map(k=>`<div class="it" data-k="${k}"><span class="e">${ITEMS[k][0]}</span>${tt(k)}</div>`).join("")}</div>`;
  app.querySelectorAll(".it").forEach(el=>el.onclick=()=>pick(el))}
 function pick(el){const k=el.dataset.k,w=level.r.steps[step];
  if(k===w){tg?.HapticFeedback?.notificationOccurred("success");score+=showRu?5:10;level.bowl.push(k);step++;
   el.classList.add("good");setTimeout(()=>step>=level.r.steps.length?win():render(),350)}
  else{tg?.HapticFeedback?.notificationOccurred("error");lives--;el.classList.add("bad");
   app.querySelector(".stat span:last-child").innerHTML=`⭐ ${score} &nbsp; ${"❤️".repeat(Math.max(lives,0))}`;
-  const h=app.querySelector(".hint");h.textContent=`«${k}» — это ${ITEMS[k][1]}. Нужно: ${w}`;
+  const h=app.querySelector(".hint");h.textContent=`«${tt(k)}» ${ui(L.is)} ${M(k)}. ${ui(L.need)}: ${tt(w)}`;
   if(lives<=0)setTimeout(lose,900)}}
 function win(){const r=level.r;app.innerHTML=`<div class="center"><div class="big">${r.dish}</div>
- <h2>${r.name} пеште! Молодец!</h2><p>Бик тәмле! — Очень вкусно!</p><p>⭐ Очки: ${score}</p>
- <p>Слова этого рецепта:<br>${r.steps.map(k=>`${ITEMS[k][0]} <b>${k}</b> — ${ITEMS[k][1]}`).join("<br>")}</p>
- <button class="main" id="next">Следующий рецепт ➡️</button></div>`;
+ <h2>${ttFull(r.name+" пеште!")} ${ui(L.well)}</h2><p>${ttFull("Бик тәмле!")} — ${ui(L.tasty)}</p><p>⭐ ${ui(UI.score)}: ${score}</p>
+ <p>${ui(L.words)}<br>${r.steps.map(k=>`${ITEMS[k][0]} <b>${ttFull(k)}</b> — ${M(k)}`).join("<br>")}</p>
+ <button class="main" id="next">${ui(L.next)}</button></div>`;
  document.getElementById("next").onclick=()=>{lvl++;lives=Math.min(lives+1,3);startLevel()}}
 function lose(){let best=0;try{best=+localStorage.getItem("ech_best")||0;if(score>best)localStorage.setItem("ech_best",score)}catch(e){}
- app.innerHTML=`<div class="center"><div class="big">😅</div><h2>Әби: «Борчылма, тагын бер тапкыр!»</h2>
- <p>«Не расстраивайся, давай ещё раз!»</p><p>⭐ Очки: ${score}<br>🏆 Рекорд: ${Math.max(best,score)}</p>
- <button class="main" id="again">Начать заново</button></div>`;
+ app.innerHTML=`<div class="center"><div class="big">😅</div><h2>${ttFull("Әби: «Борчылма, тагын бер тапкыр!»")}</h2>
+ <p>«${ui(L.sad)}»</p><p>⭐ ${ui(UI.score)}: ${score}<br>🏆 ${ui(UI.best)}: ${Math.max(best,score)}</p>
+ <button class="main" id="again">${ui(L.again)}</button></div>`;
  document.getElementById("again").onclick=()=>{lvl=0;score=0;lives=3;startLevel()}}
-app.innerHTML=`<div class="center"><div class="big">👵🥟</div><h2>Әби белән эчпочмак пешерәбез!</h2>
-<p>Бабушка по-татарски говорит, что положить. Выбирайте нужный продукт.</p>
-<p>Не знаете слово — нажмите 🇷🇺 сверху (очков будет меньше).<br>3 ошибки — игра окончена.</p>
-<button class="main" id="go">Башладык! — Начинаем!</button></div>`;
+app.innerHTML=`<div class="center"><div class="big">👵🥟</div><h2>${ttFull("Әби белән эчпочмак пешерәбез!")}</h2>
+<p>${ui(L.intro1)}</p>
+<p>${ui(L.intro2)}</p>
+<button class="main" id="go">${tt("Башладык!")} — ${ui(L.go)}</button></div>`;
 document.getElementById("go").onclick=startLevel;
 </script></body></html>
