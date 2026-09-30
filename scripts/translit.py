@@ -45,9 +45,9 @@ def _word(word):
         prev = word[i - 1].lower() if i > 0 else ""
         start_or_after_vowel = i == 0 or prev in VOWELS or prev in "ъь"
         if low == "к":
-            lat = "q" if (nxt in BACK or (back and nxt not in VOWELS)) else "k"
+            lat = "q" if ((nxt and nxt in BACK) or (back and nxt not in VOWELS)) else "k"
         elif low == "г":
-            lat = "ğ" if (nxt in BACK or (back and nxt not in VOWELS)) else "g"
+            lat = "ğ" if ((nxt and nxt in BACK) or (back and nxt not in VOWELS)) else "g"
         elif low == "е":
             lat = "ye" if start_or_after_vowel else "e"
         elif low == "ю":
