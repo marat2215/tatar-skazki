@@ -1,0 +1,41 @@
+name: Фраза дня
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC = 08:00 по Казани, каждый день
+  workflow_dispatch:        # кнопка «Run workflow» для ручного запуска
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Установка
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install -r requirements.txt
+
+      - name: Голос TatarTTS (хранится в кэше GitHub)
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: tatartts-female-v1
+
+      - name: Скачать голос, если его нет в кэше
+        run: python scripts/get_model.py
+
+      - name: Публикация фразы и викторины
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/post_phrase.py
+
