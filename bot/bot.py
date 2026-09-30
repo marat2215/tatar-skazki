@@ -28,7 +28,7 @@ from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (CallbackQuery, FSInputFile, InlineKeyboardButton,
                            InlineKeyboardMarkup, KeyboardButton, Message,
-                           ReplyKeyboardMarkup)
+                           ReplyKeyboardMarkup, WebAppInfo)
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -162,11 +162,14 @@ async def send_voice(bot, chat_id, text, caption=None, speed=1.2, markup=None):
 # ---------------------------------------------------------------- клавиатуры
 B_STORY, B_WORD, B_PROV = "🌙 Әкиятләр", "☀️ Көн сүзе", "📜 Мәкальләр"
 B_QUIZ, B_LESSON, B_SET = "❓ Викторина", "🎓 Дәресләр", "⚙️ Көйләүләр"
+B_GAME = "🎮 Уеннар"
+GAMES_URL = "https://marat2215.github.io/tatar-skazki/games/"
 
 MAIN = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
     [KeyboardButton(text=B_STORY), KeyboardButton(text=B_WORD)],
     [KeyboardButton(text=B_PROV), KeyboardButton(text=B_QUIZ)],
     [KeyboardButton(text=B_LESSON), KeyboardButton(text=B_SET)],
+    [KeyboardButton(text=B_GAME)],
 ])
 
 
@@ -407,6 +410,14 @@ async def settings_cb(c: CallbackQuery):
         await c.message.edit_reply_markup(reply_markup=settings_kb(user(u["id"])))
     except TelegramBadRequest:
         pass
+
+
+# --- игры
+@dp.message(F.text == B_GAME)
+async def games(m: Message):
+    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+        text="🎮 Уйнарга — Играть", web_app=WebAppInfo(url=GAMES_URL))]])
+    await m.answer("🎮 Уеннар — игры на татарском:\n🌲 Шүрәле\n🥟 Эчпочмак пешер\n🟩 Сүз уены", reply_markup=kb)
 
 
 # --- статистика для владельца
