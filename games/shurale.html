@@ -3,6 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Шүрәле</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="common.js"></script>
 <style>
 :root{--bg:#10231a;--fg:#e9f3ea;--card:#1b3527;--bd:#2f5a43;--ok:#3cb371;--bad:#e05a4f;--acc:#f0b429}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.35 system-ui,sans-serif;max-width:520px;margin:auto;padding:0 16px 24px}
@@ -22,7 +23,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:10p
 button.main{width:100%;padding:14px;border:0;border-radius:12px;background:var(--acc);color:#1b1b1b;font-size:17px;font-weight:700;margin-top:14px}
 .center{text-align:center}.big{font-size:64px}
 </style></head><body>
-<header><a href="index.html">← Уеннар</a><h1>Шүрәле</h1><span id="lv"></span></header>
+<header><a id="back" href="index.html">← Уеннар</a><h1 id="ttl">Шүрәле</h1><span id="lv"></span></header>
 <div class="forest"><div class="trees">🌲🌳🌲🌲🌳🌲🌲🌳🌲🌲🌳🌲</div><div class="path"></div>
 <div class="who" id="shu"><svg width="40" height="52" viewBox="0 0 40 52"><g fill="#7a5a3a" stroke="#3b2a1a" stroke-width="1.5">
 <ellipse cx="20" cy="14" rx="9" ry="11"/><rect x="16" y="23" width="8" height="18" rx="3"/>
@@ -34,27 +35,37 @@ button.main{width:100%;padding:14px;border:0;border-radius:12px;background:var(-
 <div class="bar"><span id="dist"></span><span id="sc"></span></div>
 <div id="app"></div>
 <script>
-const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
-const W=[["урман","лес"],["агач","дерево"],["куян","заяц"],["төлке","лиса"],["аю","медведь"],["бүре","волк"],["кош","птица"],
-["елга","река"],["күл","озеро"],["тау","гора"],["кояш","солнце"],["ай","луна"],["йолдыз","звезда"],["яңгыр","дождь"],
-["кар","снег"],["җил","ветер"],["су","вода"],["ут","огонь"],["таш","камень"],["чәчәк","цветок"],["яфрак","лист"],
-["гөмбә","гриб"],["җиләк","ягода"],["юл","дорога"],["авыл","деревня"],["өй","дом"],["ишек","дверь"],["тәрәзә","окно"],
-["ат","лошадь"],["сыер","корова"],["эт","собака"],["песи","кошка"],["баш","голова"],["кул","рука"],["аяк","нога"],
-["күз","глаз"],["колак","ухо"],["тиз","быстро"],["әкрен","медленно"],["зур","большой"],["кечкенә","маленький"],
-["курку","страх"],["кыю","смелый"],["көч","сила"],["төн","ночь"],["көн","день"],["иртә","утро"],["кич","вечер"]];
-const LAT={"а":"a","ә":"ä","б":"b","в":"v","г":"g","д":"d","е":"e","ж":"j","җ":"c","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","ң":"ñ","о":"o","ө":"ö","п":"p","р":"r","с":"s","т":"t","у":"u","ү":"ü","ф":"f","х":"x","һ":"h","ч":"ç","ш":"ş","ы":"ı","э":"e","ю":"yu","я":"ya"};
-const lat=w=>[...w].map(c=>LAT[c]??c).join("");
+const tg=TG;const LI={ru:1,en:2,tr:3,fi:4}[LANG];
+const L={to:{ru:"До деревни",en:"To the village",tr:"Köye",fi:"Kylään"},m:{ru:"м",en:"m",tr:"m",fi:"m"},lv:{ru:"Ур.",en:"Lv.",tr:"Sv.",fi:"Taso"},
+ what:{ru:"Что значит?",en:"What does it mean?",tr:"Ne demek?",fi:"Mitä se tarkoittaa?"},
+ saved:{ru:"Ты спасся!",en:"You escaped!",tr:"Kurtuldun!",fi:"Pääsit pakoon!"},
+ stayed:{ru:"Шурале остался в лесу.",en:"Shurale stayed in the forest.",tr:"Şüräle ormanda kaldı.",fi:"Šüräle jäi metsään."},
+ nextl:{ru:"Следующий уровень — быстрее!",en:"Next level — faster!",tr:"Sonraki seviye — daha hızlı!",fi:"Seuraava taso — nopeammin!"},
+ caught:{ru:"Шурале поймал!",en:"Shurale caught you!",tr:"Şüräle seni yakaladı!",fi:"Šüräle sai sinut kiinni!"},
+ again:{ru:"Ещё раз",en:"Play again",tr:"Tekrar oyna",fi:"Pelaa uudelleen"},
+ intro:{ru:"Вы заблудились в лесу, а за вами гонится Шурале. Выбирайте правильный перевод татарского слова — и бегите к деревне!",en:"You are lost in the forest and Shurale is chasing you. Pick the right translation of each Tatar word and run to the village!",tr:"Ormanda kayboldun ve Şüräle peşinde. Tatarca kelimenin doğru çevirisini seç ve köye koş!",fi:"Olet eksynyt metsään ja Šüräle jahtaa sinua. Valitse tataarin sanan oikea käännös ja juokse kylään!"},
+ rules:{ru:"✅ Верно — шаг вперёд<br>❌ Ошибка или долгий ответ — Шурале ближе",en:"✅ Correct — a step forward<br>❌ Mistake or slow answer — Shurale gets closer",tr:"✅ Doğru — bir adım ileri<br>❌ Hata ya da geç cevap — Şüräle yaklaşır",fi:"✅ Oikein — askel eteenpäin<br>❌ Virhe tai hidas vastaus — Šüräle lähestyy"},
+ run:{ru:"Беги!",en:"Run!",tr:"Koş!",fi:"Juokse!"}};
+document.getElementById("back").href="index.html"+QS;document.getElementById("back").textContent=ui(UI.back);
+document.getElementById("ttl").innerHTML=tt("Шүрәле");
+const W=[["урман","лес","forest","orman","metsä"],["агач","дерево","tree","ağaç","puu"],["куян","заяц","hare","tavşan","jänis"],["төлке","лиса","fox","tilki","kettu"],["аю","медведь","bear","ayı","karhu"],["бүре","волк","wolf","kurt","susi"],["кош","птица","bird","kuş","lintu"],
+["елга","река","river","nehir","joki"],["күл","озеро","lake","göl","järvi"],["тау","гора","mountain","dağ","vuori"],["кояш","солнце","sun","güneş","aurinko"],["ай","луна","moon","ay","kuu"],["йолдыз","звезда","star","yıldız","tähti"],["яңгыр","дождь","rain","yağmur","sade"],
+["кар","снег","snow","kar","lumi"],["җил","ветер","wind","rüzgâr","tuuli"],["су","вода","water","su","vesi"],["ут","огонь","fire","ateş","tuli"],["таш","камень","stone","taş","kivi"],["чәчәк","цветок","flower","çiçek","kukka"],["яфрак","лист","leaf","yaprak","lehti"],
+["гөмбә","гриб","mushroom","mantar","sieni"],["җиләк","ягода","berry","çilek","marja"],["юл","дорога","road","yol","tie"],["авыл","деревня","village","köy","kylä"],["өй","дом","house","ev","talo"],["ишек","дверь","door","kapı","ovi"],["тәрәзә","окно","window","pencere","ikkuna"],
+["ат","лошадь","horse","at","hevonen"],["сыер","корова","cow","inek","lehmä"],["эт","собака","dog","köpek","koira"],["песи","кошка","cat","kedi","kissa"],["баш","голова","head","baş","pää"],["кул","рука","hand","el","käsi"],["аяк","нога","leg","ayak","jalka"],
+["күз","глаз","eye","göz","silmä"],["колак","ухо","ear","kulak","korva"],["тиз","быстро","fast","hızlı","nopeasti"],["әкрен","медленно","slowly","yavaş","hitaasti"],["зур","большой","big","büyük","iso"],["кечкенә","маленький","small","küçük","pieni"],
+["курку","страх","fear","korku","pelko"],["кыю","смелый","brave","cesur","rohkea"],["көч","сила","strength","güç","voima"],["төн","ночь","night","gece","yö"],["көн","день","day","gün","päivä"],["иртә","утро","morning","sabah","aamu"],["кич","вечер","evening","akşam","ilta"]];
 let hero,shu,score,level,timer,qStart,qTime,pool;
 const app=document.getElementById("app"),H=document.getElementById("hero"),S=document.getElementById("shu");
 function place(){H.style.left=(8+hero*0.8)+"%";S.style.left=(4+shu*0.8)+"%";
- document.getElementById("dist").textContent=`До деревни: ${Math.max(0,100-Math.round(hero))} м`;
- document.getElementById("sc").textContent=`⭐ ${score}`;document.getElementById("lv").textContent=`Ур. ${level}`}
+ document.getElementById("dist").textContent=`${ui(L.to)}: ${Math.max(0,100-Math.round(hero))} ${ui(L.m)}`;
+ document.getElementById("sc").textContent=`⭐ ${score}`;document.getElementById("lv").textContent=`${ui(L.lv)} ${level}`}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function start(){hero=22;shu=0;score=0;level=1;pool=shuffle([...W]);next()}
-function next(){if(!pool.length)pool=shuffle([...W]);const [tt,ru]=pool.pop();
- const wrong=shuffle(W.filter(x=>x[1]!==ru)).slice(0,level>2?3:2).map(x=>x[1]);
+function next(){if(!pool.length)pool=shuffle([...W]);const q=pool.pop(),w=q[0],ru=q[LI];
+ const wrong=shuffle(W.filter(x=>x[LI]!==ru)).slice(0,level>2?3:2).map(x=>x[LI]);
  const opts=shuffle([ru,...wrong]);qTime=Math.max(3000,7000-level*800);qStart=Date.now();
- app.innerHTML=`<div class="q"><div>Что значит?</div><div class="word">${tt}</div><div class="lat">${lat(tt)}</div>
+ app.innerHTML=`<div class="q"><div>${ui(L.what)}</div><div class="word">${tt(w)}</div><div class="lat">${ALPHA==="both"?lat(w):""}</div>
  <div class="timer"><i id="tb"></i></div><div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join("")}</div></div>`;
  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(b,b.textContent===ru,ru));
  clearInterval(timer);timer=setInterval(()=>{const left=1-(Date.now()-qStart)/qTime;
@@ -65,16 +76,16 @@ function answer(b,ok,ru){clearInterval(timer);app.querySelectorAll(".opt").forEa
  else{if(b)b.classList.add("bad");shu+=10;tg?.HapticFeedback?.notificationOccurred("error")}
  place();if(shu>=hero)return setTimeout(lose,500);if(hero>=100)return setTimeout(win,500);setTimeout(next,ok?500:1100)}
 function win(){clearInterval(timer);score+=50;place();
- app.innerHTML=`<div class="center"><div class="big">🏡🎉</div><h2>Котылдың! Ты спасся!</h2>
- <p>Шүрәле остался в лесу. ⭐ ${score}</p><button class="main" id="nx">Следующий уровень — быстрее!</button></div>`;
+ app.innerHTML=`<div class="center"><div class="big">🏡🎉</div><h2>${tt("Котылдың!")} ${ui(L.saved)}</h2>
+ <p>${ui(L.stayed)} ⭐ ${score}</p><button class="main" id="nx">${ui(L.nextl)}</button></div>`;
  document.getElementById("nx").onclick=()=>{level++;hero=22;shu=0;next()}}
 function lose(){clearInterval(timer);let best=0;try{best=+localStorage.getItem("shu_best")||0;if(score>best)localStorage.setItem("shu_best",score)}catch(e){}
- app.innerHTML=`<div class="center"><div class="big">🌲😱🌲</div><h2>Шүрәле тотты! Шурале поймал!</h2>
- <p>⭐ Очки: ${score}<br>🏆 Рекорд: ${Math.max(best,score)}</p><button class="main" id="ag">Кабат уйнарга — Ещё раз</button></div>`;
+ app.innerHTML=`<div class="center"><div class="big">🌲😱🌲</div><h2>${tt("Шүрәле тотты!")} ${ui(L.caught)}</h2>
+ <p>⭐ ${ui(UI.score)}: ${score}<br>🏆 ${ui(UI.best)}: ${Math.max(best,score)}</p><button class="main" id="ag">${tt("Кабат уйнарга")} — ${ui(L.again)}</button></div>`;
  document.getElementById("ag").onclick=start}
 hero=22;shu=0;score=0;level=1;place();
-app.innerHTML=`<div class="center"><h2>Урманда Шүрәле!</h2>
-<p>Вы заблудились в лесу, а за вами гонится Шурале. Выбирайте правильный перевод татарского слова — и бегите к деревне!</p>
-<p>✅ Верно — шаг вперёд<br>❌ Ошибка или долгий ответ — Шурале ближе</p><button class="main" id="go">Йөгер! — Беги!</button></div>`;
+app.innerHTML=`<div class="center"><h2>${ttFull("Урманда Шүрәле!")}</h2>
+<p>${ui(L.intro)}</p>
+<p>${ui(L.rules)}</p><button class="main" id="go">${tt("Йөгер!")} — ${ui(L.run)}</button></div>`;
 document.getElementById("go").onclick=start;
 </script></body></html>
