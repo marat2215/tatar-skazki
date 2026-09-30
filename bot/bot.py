@@ -1,11 +1,12 @@
 """TatarlargaBot — бот для изучения татарского языка.
 
-Меню: сказки, слово дня, пословицы, викторина, уроки, настройки.
+Меню: сказки, слово дня, пословицы, викторина, уроки, игры, настройки.
+Язык интерфейса: русский, английский, турецкий, финский.
+Алфавит татарского текста: кириллица, латиница или оба.
 Подписчикам: слово дня утром (08:00) и сказка вечером (19:00) по Казани.
 
 Контент берётся из папок репозитория (stories, phrases, content) —
-чтобы добавить сказку или фразу, достаточно изменить файлы на GitHub,
-сервер сам подтягивает обновления.
+сервер сам подтягивает изменения с GitHub.
 
 Переменные окружения (файл .env):
   BOT_TOKEN — токен бота от @BotFather
@@ -24,14 +25,16 @@ import sys
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (CallbackQuery, FSInputFile, InlineKeyboardButton,
-                           InlineKeyboardMarkup, KeyboardButton, Message,
-                           ReplyKeyboardMarkup, WebAppInfo)
+                           InlineKeyboardMarkup, KeyboardButton, MenuButtonWebApp,
+                           Message, ReplyKeyboardMarkup, WebAppInfo)
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "bot"))
+from texts import LANGS, t  # noqa: E402
 from translit import to_latin  # noqa: E402
 
 KAZAN = dt.timezone(dt.timedelta(hours=3))
@@ -40,6 +43,7 @@ DATA = Path(os.environ.get("DATA_DIR", ROOT / "data"))
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "0") or 0)
 START_DATE = dt.date(2026, 10, 1)
 MORNING, EVENING = dt.time(8, 0), dt.time(19, 0)
+GAMES_URL = "https://marat2215.github.io/tatar-skazki/games/"
 
 log = logging.getLogger("tatarbot")
 
@@ -52,16 +56,25 @@ CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, name TEXT,
 CREATE TABLE IF NOT EXISTS files(key TEXT PRIMARY KEY, file_id TEXT);
 CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);
 """)
+try:  # добавляем колонку языка в старую базу
+    db.execute("ALTER TABLE users ADD COLUMN lang TEXT DEFAULT 'ru'")
+    db.commit()
+except sqlite3.OperationalError:
+    pass
+
+FIELDS = ["id", "alpha", "sub", "right", "total", "lang"]
 
 
 def user(uid, name=""):
-    row = db.execute("SELECT id,alpha,sub,okc,total FROM users WHERE id=?", (uid,)).fetchone()
+    row = db.execute("SELECT id,alpha,sub,okc,total,lang FROM users WHERE id=?", (uid,)).fetchone()
     if not row:
         db.execute("INSERT INTO users(id,name,joined) VALUES(?,?,?)",
                    (uid, name, dt.datetime.now(KAZAN).isoformat()))
         db.commit()
-        row = (uid, "both", 1, 0, 0)
-    return dict(zip(["id", "alpha", "sub", "right", "total"], row))
+        row = (uid, "both", 1, 0, 0, "ru")
+    u = dict(zip(FIELDS, row))
+    u["lang"] = u["lang"] if u["lang"] in LANGS else "ru"
+    return u
 
 
 def set_user(uid, **kw):
@@ -114,11 +127,18 @@ def proverbs():
 
 
 def lessons():
-    rows = _load(ROOT / "content" / "lessons.csv", _csv)
     out = {}
-    for r in rows:
+    for r in _load(ROOT / "content" / "lessons.csv", _csv):
         out.setdefault(r["lesson"], []).append(r)
     return list(out.items())
+
+
+def tr(row, lang, base="ru"):
+    """Перевод строки контента на язык пользователя (запасной вариант — русский)."""
+    if lang == "ru":
+        return row.get(base, "")
+    key = f"{base}_{lang}" if base != "ru" else lang
+    return row.get(key) or row.get(base, "")
 
 
 def today_index(n):
@@ -126,12 +146,21 @@ def today_index(n):
 
 
 def show(text, alpha):
-    """Текст по настройке пользователя: кириллица, латиница или оба."""
+    """Татарский текст по настройке: кириллица, латиница или оба."""
     if alpha == "cyr":
         return text
     if alpha == "lat":
         return to_latin(text)
     return f"{text}\n🔤 {to_latin(text)}"
+
+
+def short(text, alpha):
+    """Короткое слово для кнопок и вопросов."""
+    if alpha == "cyr":
+        return text
+    if alpha == "lat":
+        return to_latin(text)
+    return f"{text} ({to_latin(text)})"
 
 
 # ---------------------------------------------------------------- аудио
@@ -162,20 +191,47 @@ async def send_voice(bot, chat_id, text, caption=None, speed=1.2, markup=None):
 # ---------------------------------------------------------------- клавиатуры
 B_STORY, B_WORD, B_PROV = "🌙 Әкиятләр", "☀️ Көн сүзе", "📜 Мәкальләр"
 B_QUIZ, B_LESSON, B_SET = "❓ Викторина", "🎓 Дәресләр", "⚙️ Көйләүләр"
-B_GAME = "🎮 Уеннар"
-GAMES_URL = "https://marat2215.github.io/tatar-skazki/games/"
 
-MAIN = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
-    [KeyboardButton(text=B_STORY), KeyboardButton(text=B_WORD)],
-    [KeyboardButton(text=B_PROV), KeyboardButton(text=B_QUIZ)],
-    [KeyboardButton(text=B_LESSON), KeyboardButton(text=B_SET)],
-    [KeyboardButton(text=B_GAME)],
-])
+
+def games_url(u, page=""):
+    return f"{GAMES_URL}{page}?lang={u['lang']}&a={u['alpha']}"
+
+
+def main_kb(u):
+    game = lambda title, page: KeyboardButton(text=title, web_app=WebAppInfo(url=games_url(u, page)))  # noqa: E731
+    return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
+        [KeyboardButton(text=B_STORY), KeyboardButton(text=B_WORD)],
+        [KeyboardButton(text=B_PROV), KeyboardButton(text=B_QUIZ)],
+        [KeyboardButton(text=B_LESSON), KeyboardButton(text=B_SET)],
+        [game("🌲 Шүрәле", "shurale.html"), game("🥟 Эчпочмак", "echpochmak.html"),
+         game("🟩 Сүз уены", "suz.html")],
+    ])
 
 
 def ikb(rows):
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=t, callback_data=d) for t, d in row] for row in rows])
+        [InlineKeyboardButton(text=tx, callback_data=d) for tx, d in row] for row in rows])
+
+
+async def set_menu_button(bot, u):
+    """Кнопка «Уеннар» слева от поля ввода — открывает меню игр."""
+    try:
+        await bot.set_chat_menu_button(chat_id=u["id"], menu_button=MenuButtonWebApp(
+            text="🎮 Уеннар", web_app=WebAppInfo(url=games_url(u))))
+    except Exception as e:  # noqa: BLE001
+        log.warning("Кнопка меню: %s", e)
+
+
+def lang_kb(prefix):
+    items = list(LANGS.items())
+    return ikb([[(n, f"{prefix}:{c}") for c, n in items[:2]], [(n, f"{prefix}:{c}") for c, n in items[2:]]])
+
+
+def alpha_kb(lang, prefix, current=None):
+    mark = lambda v: "✅ " if current == v else ""  # noqa: E731
+    return ikb([[(mark("cyr") + t("cyr", lang) + " (Кк)", f"{prefix}:cyr"),
+                 (mark("lat") + t("lat", lang) + " (Kk)", f"{prefix}:lat")],
+                [(mark("both") + t("both", lang), f"{prefix}:both")]])
 
 
 # ---------------------------------------------------------------- обработчики
@@ -185,24 +241,35 @@ dp = Dispatcher()
 @dp.message(CommandStart())
 async def start(m: Message):
     user(m.from_user.id, m.from_user.full_name)
-    await m.answer(
-        "Исәнмесез! 👋 Добро пожаловать!\n\n"
-        "Здесь можно учить татарский язык:\n"
-        "🌙 сказки на ночь с озвучкой\n☀️ слово дня\n📜 пословицы\n"
-        "❓ викторины\n🎓 уроки по темам\n\n"
-        "Каждое утро я пришлю слово дня, а вечером — сказку. "
-        "Отключить можно в «⚙️ Көйләүләр».", reply_markup=MAIN)
+    await m.answer(t("choose_lang", "ru"), reply_markup=lang_kb("sl"))
+
+
+@dp.callback_query(F.data.startswith("sl:"))
+async def start_lang(c: CallbackQuery):
+    lang = c.data[3:]
+    set_user(c.from_user.id, lang=lang)
+    await c.answer()
+    await c.message.answer(t("choose_alpha", lang), reply_markup=alpha_kb(lang, "sa"))
+
+
+@dp.callback_query(F.data.startswith("sa:"))
+async def start_alpha(c: CallbackQuery):
+    set_user(c.from_user.id, alpha=c.data[3:])
+    u = user(c.from_user.id)
+    await c.answer()
+    await set_menu_button(c.bot, u)
+    await c.message.answer(t("welcome", u["lang"]), reply_markup=main_kb(u))
 
 
 # --- сказки
 @dp.message(F.text == B_STORY)
 async def story_list(m: Message):
-    st = stories()
-    rows = [[(s["title"], f"st:{i}")] for i, s in enumerate(st)]
-    await m.answer("🌙 Выберите сказку:", reply_markup=ikb(rows))
+    u = user(m.from_user.id)
+    rows = [[(short(s["title"], u["alpha"]), f"st:{i}")] for i, s in enumerate(stories())]
+    await m.answer(t("choose_story", u["lang"]), reply_markup=ikb(rows))
 
 
-async def send_story(bot, chat_id, i, alpha):
+async def send_story(bot, chat_id, i, u):
     st = stories()
     if not st:
         return
@@ -210,13 +277,14 @@ async def send_story(bot, chat_id, i, alpha):
     ready = ROOT / "audio" / f"{s['id']}.mp3"
     if ready.exists():
         await bot.send_audio(chat_id, FSInputFile(ready), title=s["title"],
-                             performer="Татар әкиятләре")
+                             performer="Татар әкиятләре", caption=t("listen", u["lang"]))
     else:
-        await send_voice(bot, chat_id, f"{s['title']}\n{s['body']}", speed=1.15)
+        await send_voice(bot, chat_id, f"{s['title']}\n{s['body']}", speed=1.15,
+                         caption=t("listen", u["lang"]))
     text = f"🌙 {s['title']}\n\n{s['body']}"
-    if alpha == "lat":
+    if u["alpha"] == "lat":
         text = to_latin(text)
-    elif alpha == "both":
+    elif u["alpha"] == "both":
         text += f"\n\n— — —\n\n{to_latin(s['title'])}\n\n{to_latin(s['body'])}"
     for k in range(0, len(text), 4000):
         await bot.send_message(chat_id, text[k:k + 4000])
@@ -225,29 +293,31 @@ async def send_story(bot, chat_id, i, alpha):
 @dp.callback_query(F.data.startswith("st:"))
 async def story_cb(c: CallbackQuery):
     await c.answer()
-    await send_story(c.bot, c.from_user.id, int(c.data[3:]), user(c.from_user.id)["alpha"])
+    await send_story(c.bot, c.from_user.id, int(c.data[3:]), user(c.from_user.id))
 
 
 # --- слово дня
-async def send_word(bot, chat_id, alpha, i=None):
+async def send_word(bot, chat_id, u, i=None):
     ph = phrases()
     if not ph:
         return
     r = ph[today_index(len(ph)) if i is None else i % len(ph)]
-    cap = f"☀️ Көн сүзе — фраза дня\n\n🗣 {show(r['tt'], alpha)}\n🇷🇺 {r['ru']}\n\nТыңлагыз һәм кабатлагыз!"
+    lang = u["lang"]
+    cap = (f"☀️ Көн сүзе — {t('word_title', lang)}\n\n🗣 {show(r['tt'], u['alpha'])}\n"
+           f"💬 {tr(r, lang)}\n\n{t('repeat', lang)}")
     await send_voice(bot, chat_id, f"{r['tt']}\n{r['tt']}", caption=cap, speed=1.25,
-                     markup=ikb([[("🔁 Еще фраза", "word:rnd")]]))
+                     markup=ikb([[(t("more_phrase", lang), "word:rnd")]]))
 
 
 @dp.message(F.text == B_WORD)
 async def word(m: Message):
-    await send_word(m.bot, m.chat.id, user(m.from_user.id)["alpha"])
+    await send_word(m.bot, m.chat.id, user(m.from_user.id))
 
 
 @dp.callback_query(F.data == "word:rnd")
 async def word_rnd(c: CallbackQuery):
     await c.answer()
-    await send_word(c.bot, c.from_user.id, user(c.from_user.id)["alpha"], random.randrange(10 ** 6))
+    await send_word(c.bot, c.from_user.id, user(c.from_user.id), random.randrange(10 ** 6))
 
 
 # --- пословицы
@@ -261,20 +331,17 @@ async def proverb(ev):
     if not pr:
         return
     r = random.choice(pr)
-    alpha = user(ev.from_user.id)["alpha"]
-    cap = f"📜 Мәкаль\n\n{show(r['tt'], alpha)}\n\n🇷🇺 {r['ru']}\n💡 {r['meaning']}"
+    u = user(ev.from_user.id)
+    lang = u["lang"]
+    cap = (f"📜 Мәкаль — {t('proverb', lang)}\n\n{show(r['tt'], u['alpha'])}\n\n"
+           f"💬 {tr(r, lang)}\n💡 {tr(r, lang, 'meaning')}")
     await send_voice(msg.bot, msg.chat.id, r["tt"], caption=cap, speed=1.2,
-                     markup=ikb([[("🔁 Еще пословица", "prov")]]))
+                     markup=ikb([[(t("more_proverb", lang), "prov")]]))
 
 
 # --- викторина
-def quiz_question():
-    ph = [r for r in phrases() if r.get("quiz_word")]
-    i = random.randrange(len(ph))
-    r = ph[i]
-    opts = [r["right"], r["wrong1"], r["wrong2"]]
-    random.shuffle(opts)
-    return i, r, opts
+def quiz_rows():
+    return [r for r in phrases() if r.get("quiz_word")]
 
 
 @dp.message(F.text == B_QUIZ)
@@ -283,30 +350,36 @@ async def quiz(ev):
     msg = ev.message if isinstance(ev, CallbackQuery) else ev
     if isinstance(ev, CallbackQuery):
         await ev.answer()
-    alpha = user(ev.from_user.id)["alpha"]
-    i, r, opts = quiz_question()
-    rows = [[(o, f"q:{i}:{int(o == r['right'])}")] for o in opts]
-    word_txt = r["quiz_word"] if alpha == "cyr" else (
-        to_latin(r["quiz_word"]) if alpha == "lat" else f"{r['quiz_word']} ({to_latin(r['quiz_word'])})")
-    await msg.answer(f"❓ Что значит «{word_txt}»?", reply_markup=ikb(rows))
+    u = user(ev.from_user.id)
+    rows = quiz_rows()
+    i = random.randrange(len(rows))
+    right = tr(rows[i], u["lang"], "right")
+    others = list({tr(r, u["lang"], "right") for r in rows} - {right})
+    opts = random.sample(others, 2) + [right]
+    random.shuffle(opts)
+    kb = [[(o, f"q:{i}:{int(o == right)}")] for o in opts]
+    await msg.answer(t("quiz_q", u["lang"], w=short(rows[i]["quiz_word"], u["alpha"])), reply_markup=ikb(kb))
 
 
 @dp.callback_query(F.data.startswith("q:"))
 async def quiz_answer(c: CallbackQuery):
     _, i, ok = c.data.split(":")
     u = user(c.from_user.id)
-    ph = [r for r in phrases() if r.get("quiz_word")]
-    r = ph[int(i) % len(ph)]
+    lang = u["lang"]
+    rows = quiz_rows()
+    r = rows[int(i) % len(rows)]
+    right_txt = tr(r, lang, "right")
     right, total = u["right"] + (ok == "1"), u["total"] + 1
     set_user(u["id"], okc=right, total=total)
-    mark = "✅ Дөрес! Верно!" if ok == "1" else f"❌ Ялгыш. Правильно: {r['right']}"
+    mark = t("correct", lang) if ok == "1" else t("wrong", lang, a=right_txt)
     await c.answer()
     try:
         await c.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
         pass
-    await c.message.answer(f"{mark}\n{r['quiz_word']} — {r['right']}\n\n🏆 Счёт: {right} из {total}",
-                           reply_markup=ikb([[("➡️ Следующий вопрос", "quiz:next")]]))
+    await c.message.answer(f"{mark}\n{short(r['quiz_word'], u['alpha'])} — {right_txt}\n\n"
+                           f"{t('score', lang, r=right, t=total)}",
+                           reply_markup=ikb([[(t("next_q", lang), "quiz:next")]]))
 
 
 # --- уроки
@@ -314,9 +387,11 @@ tests = {}  # uid -> {"lesson": n, "q": k, "ok": m}
 
 
 @dp.message(F.text == B_LESSON)
-async def lesson_list(m: Message):
-    rows = [[(f"{n + 1}. {name}", f"ls:{n}")] for n, (name, _) in enumerate(lessons())]
-    await m.answer("🎓 Выберите урок:", reply_markup=ikb(rows))
+async def lesson_list(m: Message, uid=None):
+    u = user(uid or m.from_user.id)
+    rows = [[(f"{n + 1}. {short(name, u['alpha'])} — {items[0]['title_' + u['lang']]}", f"ls:{n}")]
+            for n, (name, items) in enumerate(lessons())]
+    await m.answer(t("choose_lesson", u["lang"]), reply_markup=ikb(rows))
 
 
 @dp.callback_query(F.data.startswith("ls:"))
@@ -324,30 +399,32 @@ async def lesson(c: CallbackQuery):
     await c.answer()
     n = int(c.data[3:])
     name, items = lessons()[n]
-    alpha = user(c.from_user.id)["alpha"]
-    text = f"🎓 Урок {n + 1}. {name}\n\n" + "\n\n".join(
-        f"• {show(r['tt'], alpha)}\n   {r['ru']}" for r in items)
+    u = user(c.from_user.id)
+    lang = u["lang"]
+    text = (f"🎓 {t('lesson', lang)} {n + 1}. {short(name, u['alpha'])} — {items[0]['title_' + lang]}\n\n"
+            + "\n\n".join(f"• {show(r['tt'], u['alpha'])}\n   {tr(r, lang)}" for r in items))
     await c.message.answer(text)
     await send_voice(c.bot, c.from_user.id, "\n".join(r["tt"] for r in items),
-                     caption="🔊 Послушайте и повторите каждую фразу", speed=1.25,
-                     markup=ikb([[("📝 Проверить себя", f"lt:{n}")]]))
+                     caption=t("listen_each", lang), speed=1.25,
+                     markup=ikb([[(t("check", lang), f"lt:{n}")]]))
 
 
 async def lesson_q(c, uid):
-    t = tests[uid]
-    name, items = lessons()[t["lesson"]]
-    if t["q"] >= len(items):
-        await c.message.answer(f"🎉 Урок пройден! Правильно {t['ok']} из {len(items)}.\n"
-                               "Молодец! Булдырдың!", reply_markup=ikb([[("🎓 Другие уроки", "lsl")]]))
+    tst = tests[uid]
+    u = user(uid)
+    lang = u["lang"]
+    _, items = lessons()[tst["lesson"]]
+    if tst["q"] >= len(items):
+        await c.message.answer(t("lesson_done", lang, ok=tst["ok"], n=len(items)),
+                               reply_markup=ikb([[(t("other_lessons", lang), "lsl")]]))
         tests.pop(uid, None)
         return
-    r = items[t["q"]]
+    r = items[tst["q"]]
     others = [x["tt"] for x in items if x is not r]
     opts = random.sample(others, min(2, len(others))) + [r["tt"]]
     random.shuffle(opts)
-    alpha = user(uid)["alpha"]
-    rows = [[(to_latin(o) if alpha == "lat" else o, f"la:{int(o == r['tt'])}")] for o in opts]
-    await c.message.answer(f"Вопрос {t['q'] + 1}/{len(items)}\nКак сказать по-татарски:\n«{r['ru']}»",
+    rows = [[(short(o, "lat") if u["alpha"] == "lat" else o, f"la:{int(o == r['tt'])}")] for o in opts]
+    await c.message.answer(t("lesson_q", lang, i=tst["q"] + 1, n=len(items), x=tr(r, lang)),
                            reply_markup=ikb(rows))
 
 
@@ -360,13 +437,14 @@ async def lesson_test(c: CallbackQuery):
 
 @dp.callback_query(F.data.startswith("la:"))
 async def lesson_answer(c: CallbackQuery):
-    t = tests.get(c.from_user.id)
-    if not t:
-        return await c.answer("Начните урок заново")
+    tst = tests.get(c.from_user.id)
+    lang = user(c.from_user.id)["lang"]
+    if not tst:
+        return await c.answer(t("restart", lang))
     ok = c.data == "la:1"
-    t["ok"] += ok
-    t["q"] += 1
-    await c.answer("✅ Дөрес!" if ok else "❌ Ялгыш")
+    tst["ok"] += ok
+    tst["q"] += 1
+    await c.answer("✅" if ok else "❌")
     try:
         await c.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
@@ -377,47 +455,56 @@ async def lesson_answer(c: CallbackQuery):
 @dp.callback_query(F.data == "lsl")
 async def lesson_list_cb(c: CallbackQuery):
     await c.answer()
-    await lesson_list(c.message)
+    await lesson_list(c.message, uid=c.from_user.id)
 
 
 # --- настройки
 def settings_kb(u):
-    a = u["alpha"]
-    mark = lambda v: "✅ " if a == v else ""  # noqa: E731
+    lang = u["lang"]
+    mark = lambda cur, v: "✅ " if cur == v else ""  # noqa: E731
+    items = list(LANGS.items())
     return ikb([
-        [(mark("cyr") + "Кириллица", "al:cyr"), (mark("lat") + "Latin", "al:lat"),
-         (mark("both") + "Обе", "al:both")],
-        [("🔔 Рассылка: вкл" if u["sub"] else "🔕 Рассылка: выкл", "sub")],
+        [(mark(lang, c) + n, f"lg:{c}") for c, n in items[:2]],
+        [(mark(lang, c) + n, f"lg:{c}") for c, n in items[2:]],
+        [(mark(u["alpha"], "cyr") + t("cyr", lang), "al:cyr"), (mark(u["alpha"], "lat") + t("lat", lang), "al:lat"),
+         (mark(u["alpha"], "both") + t("both", lang), "al:both")],
+        [(t("sub_on", lang) if u["sub"] else t("sub_off", lang), "sub")],
     ])
 
 
 @dp.message(F.text == B_SET)
 async def settings(m: Message):
     u = user(m.from_user.id)
-    await m.answer("⚙️ Настройки\n\nАлфавит и ежедневная рассылка (08:00 слово дня, 19:00 сказка):",
-                   reply_markup=settings_kb(u))
+    await m.answer(t("settings", u["lang"]), reply_markup=settings_kb(u))
 
 
-@dp.callback_query(F.data.startswith("al:") | (F.data == "sub"))
+@dp.callback_query(F.data.startswith("al:") | F.data.startswith("lg:") | (F.data == "sub"))
 async def settings_cb(c: CallbackQuery):
     u = user(c.from_user.id)
     if c.data == "sub":
         set_user(u["id"], sub=0 if u["sub"] else 1)
-    else:
+    elif c.data.startswith("al:"):
         set_user(u["id"], alpha=c.data[3:])
-    await c.answer("Сохранено")
+    else:
+        set_user(u["id"], lang=c.data[3:])
+    u = user(u["id"])
+    await c.answer(t("saved", u["lang"]))
     try:
-        await c.message.edit_reply_markup(reply_markup=settings_kb(user(u["id"])))
+        await c.message.edit_text(t("settings", u["lang"]), reply_markup=settings_kb(u))
     except TelegramBadRequest:
         pass
+    if c.data != "sub":  # обновляем ссылки игр под новый язык/алфавит
+        await set_menu_button(c.bot, u)
+        await c.message.answer(t("menu", u["lang"]), reply_markup=main_kb(u))
 
 
-# --- игры
-@dp.message(F.text == B_GAME)
+# --- игры (команда /games)
+@dp.message(Command("games"))
 async def games(m: Message):
+    u = user(m.from_user.id)
     kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
-        text="🎮 Уйнарга — Играть", web_app=WebAppInfo(url=GAMES_URL))]])
-    await m.answer("🎮 Уеннар — игры на татарском:\n🌲 Шүрәле\n🥟 Эчпочмак пешер\n🟩 Сүз уены", reply_markup=kb)
+        text=t("play", u["lang"]), web_app=WebAppInfo(url=games_url(u)))]])
+    await m.answer(t("games", u["lang"]), reply_markup=kb)
 
 
 # --- статистика для владельца
@@ -428,12 +515,15 @@ async def stats(m: Message):
     n, s = db.execute("SELECT COUNT(*), SUM(sub) FROM users").fetchone()
     week = (dt.datetime.now(KAZAN) - dt.timedelta(days=7)).isoformat()
     new = db.execute("SELECT COUNT(*) FROM users WHERE joined>?", (week,)).fetchone()[0]
-    await m.answer(f"📊 Пользователей: {n}\n🔔 С рассылкой: {s or 0}\n🆕 За неделю: {new}")
+    by_lang = ", ".join(f"{lg}: {k}" for lg, k in
+                        db.execute("SELECT lang, COUNT(*) FROM users GROUP BY lang"))
+    await m.answer(f"📊 Пользователей: {n}\n🔔 С рассылкой: {s or 0}\n🆕 За неделю: {new}\n🌐 {by_lang}")
 
 
 @dp.message()
 async def fallback(m: Message):
-    await m.answer("Выберите раздел в меню 👇", reply_markup=MAIN)
+    u = user(m.from_user.id)
+    await m.answer(t("menu", u["lang"]), reply_markup=main_kb(u))
 
 
 # ---------------------------------------------------------------- рассылка
@@ -443,11 +533,11 @@ async def broadcast(bot, kind):
     st = stories()
     for uid in ids:
         try:
-            alpha = user(uid)["alpha"]
+            u = user(uid)
             if kind == "word":
-                await send_word(bot, uid, alpha)
+                await send_word(bot, uid, u)
             else:
-                await send_story(bot, uid, today_index(len(st)), alpha)
+                await send_story(bot, uid, today_index(len(st)), u)
         except TelegramForbiddenError:
             set_user(uid, sub=0)  # пользователь заблокировал бота
         except Exception as e:  # noqa: BLE001
@@ -458,9 +548,9 @@ async def broadcast(bot, kind):
 async def scheduler(bot):
     while True:
         now = dt.datetime.now(KAZAN)
-        for kind, t in (("word", MORNING), ("story", EVENING)):
+        for kind, tm in (("word", MORNING), ("story", EVENING)):
             key = f"sent_{kind}"
-            if now.time() >= t and meta(key) != now.date().isoformat():
+            if now.time() >= tm and meta(key) != now.date().isoformat():
                 meta(key, now.date().isoformat())
                 asyncio.create_task(broadcast(bot, kind))
         await asyncio.sleep(30)
@@ -472,10 +562,15 @@ async def main():
     if not token:
         sys.exit("Нет BOT_TOKEN в файле .env")
     bot = Bot(token)
-    # чтобы после первого запуска не разослать «пропущенное» за сегодня
+    # кнопка «Уеннар» в меню Telegram для всех по умолчанию
+    try:
+        await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(
+            text="🎮 Уеннар", web_app=WebAppInfo(url=GAMES_URL)))
+    except Exception as e:  # noqa: BLE001
+        log.warning("Кнопка меню: %s", e)
     today = dt.datetime.now(KAZAN).date().isoformat()
-    for kind, t in (("word", MORNING), ("story", EVENING)):
-        if meta(f"sent_{kind}") is None and dt.datetime.now(KAZAN).time() >= t:
+    for kind, tm in (("word", MORNING), ("story", EVENING)):
+        if meta(f"sent_{kind}") is None and dt.datetime.now(KAZAN).time() >= tm:
             meta(f"sent_{kind}", today)
     asyncio.create_task(scheduler(bot))
     await dp.start_polling(bot)
