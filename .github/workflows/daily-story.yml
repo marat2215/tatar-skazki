@@ -1,0 +1,47 @@
+name: Сказка дня
+
+on:
+  schedule:
+    - cron: "0 16 * * *"   # 16:00 UTC = 19:00 по Казани, каждый день
+  workflow_dispatch:        # кнопка «Run workflow» для ручного запуска
+
+permissions:
+  contents: write           # чтобы сохранить готовое аудио в репозиторий
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Установка
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install -r requirements.txt
+
+      - name: Голос TatarTTS (хранится в кэше GitHub)
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: tatartts-female-v1
+
+      - name: Скачать голос, если его нет в кэше
+        run: python scripts/get_model.py
+
+      - name: Публикация сказки
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/post_story.py
+
+      - name: Сохранить новое аудио
+        run: |
+          git config user.name "skazka-bot"
+          git config user.email "skazka-bot@users.noreply.github.com"
+          git add audio/
+          git diff --cached --quiet || (git commit -m "Аудио сказки" && git push)
