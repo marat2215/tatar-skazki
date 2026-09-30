@@ -1,16 +1,16 @@
-tt,ru,meaning
-"Тырышкан табар, ташка кадак кагар.",Старательный найдёт — и в камень гвоздь вобьёт.,Упорный труд преодолеет любые трудности.
-"Җиде кат үлчә, бер кат кис.","Семь раз отмерь, один раз отрежь.","Прежде чем что-то делать, хорошо подумай."
-Тамчы тама-тама таш тишә.,Капля за каплей камень точит.,"Маленькие, но постоянные усилия дают большой результат."
-Ашыккан — ашка пешкән.,Поспешишь — обожжёшься о суп.,Спешка приводит к ошибкам (поспешишь — людей насмешишь).
-Күп укыган күп белер.,"Кто много читает, тот много знает.",Чтение — путь к знаниям.
-"Белем — нур, белемсезлек — караңгылык.","Знание — свет, невежество — тьма.",Учиться — значит видеть мир ясно.
-Иске дус яңа ике дустан яхшырак.,Старый друг лучше двух новых.,Цените проверенную временем дружбу.
-"Кош — канаты белән, кеше — дусты белән.","Птица сильна крыльями, человек — друзьями.",Друзья — главная опора человека.
-Сабыр төбе — сары алтын.,На дне терпения — жёлтое золото.,Терпение вознаграждается.
-Яхшы сүз — җан азыгы.,Доброе слово — пища для души.,Доброе слово лечит и радует.
-Эш беткәч уйнарга ярый.,"Когда дело сделано, можно и поиграть.","Сначала работа, потом отдых (кончил дело — гуляй смело)."
-Хезмәт кешене бизи.,Труд украшает человека.,Уважение приходит через труд.
-"Сүз — көмеш, сүзсезлек — алтын.","Слово — серебро, молчание — золото.",Иногда лучше промолчать.
-Туган җирнең туфрагы да шифалы.,Даже земля родного края целебна.,Родина даёт силы.
-Күршең тыныч — син тыныч.,Спокоен сосед — спокоен и ты.,Живите в мире с соседями.
+tt,ru,meaning,en,meaning_en,tr,meaning_tr,fi,meaning_fi
+"Тырышкан табар, ташка кадак кагар.",Старательный найдёт — и в камень гвоздь вобьёт.,Упорный труд преодолеет любые трудности.,The diligent one finds — and even drives a nail into stone.,Hard work overcomes any difficulty.,"Çalışan bulur, taşa bile çivi çakar.",Azimli çalışma her zorluğu yener.,Ahkera löytää – lyö naulan kiveenkin.,Sinnikäs työ voittaa kaikki vaikeudet.
+"Җиде кат үлчә, бер кат кис.","Семь раз отмерь, один раз отрежь.","Прежде чем что-то делать, хорошо подумай.","Measure seven times, cut once.",Think carefully before acting.,"Yedi kere ölç, bir kere biç.",Bir işe başlamadan önce iyice düşün.,"Mittaa seitsemän kertaa, leikkaa kerran.",Mieti huolellisesti ennen kuin toimit.
+Тамчы тама-тама таш тишә.,Капля за каплей камень точит.,"Маленькие, но постоянные усилия дают большой результат.",Drop by drop the stone is pierced.,Small but steady efforts bring great results.,Damlaya damlaya taş delinir.,Küçük ama sürekli çabalar büyük sonuç verir.,Tippa tipalta kivi kuluu puhki.,Pienet mutta sinnikkäät ponnistelut tuovat suuria tuloksia.
+Ашыккан — ашка пешкән.,Поспешишь — обожжёшься о суп.,Спешка приводит к ошибкам (поспешишь — людей насмешишь).,The one in a hurry gets burned by the soup.,Haste leads to mistakes.,Acele eden aşa yanar.,Acele işe şeytan karışır.,Kiirehtijä polttaa suunsa keittoon.,Kiire johtaa virheisiin.
+Күп укыган күп белер.,"Кто много читает, тот много знает.",Чтение — путь к знаниям.,"Who reads much, knows much.",Reading is the way to knowledge.,Çok okuyan çok bilir.,Okumak bilginin yoludur.,"Joka paljon lukee, se paljon tietää.",Lukeminen on tie tietoon.
+"Белем — нур, белемсезлек — караңгылык.","Знание — свет, невежество — тьма.",Учиться — значит видеть мир ясно.,"Knowledge is light, ignorance is darkness.",Learning lets you see the world clearly.,"Bilgi nurdur, bilgisizlik karanlıktır.",Öğrenmek dünyayı açıkça görmektir.,"Tieto on valoa, tietämättömyys pimeyttä.",Oppiminen auttaa näkemään maailman selvästi.
+Иске дус яңа ике дустан яхшырак.,Старый друг лучше двух новых.,Цените проверенную временем дружбу.,An old friend is better than two new ones.,Value friendship tested by time.,Eski dost iki yeni dosttan iyidir.,Zamanla sınanmış dostluğun kıymetini bil.,Vanha ystävä on parempi kuin kaksi uutta.,Arvosta ajan koettelemaa ystävyyttä.
+"Кош — канаты белән, кеше — дусты белән.","Птица сильна крыльями, человек — друзьями.",Друзья — главная опора человека.,"A bird is strong with its wings, a person with friends.",Friends are a person's main support.,"Kuş kanadıyla, insan dostuyla güçlüdür.",Dostlar insanın en büyük dayanağıdır.,"Lintu on vahva siivillään, ihminen ystävillään.",Ystävät ovat ihmisen tärkein tuki.
+Сабыр төбе — сары алтын.,На дне терпения — жёлтое золото.,Терпение вознаграждается.,At the bottom of patience lies yellow gold.,Patience is rewarded.,Sabrın sonu sarı altındır.,Sabır ödüllendirilir.,Kärsivällisyyden pohjalla on keltaista kultaa.,Kärsivällisyys palkitaan.
+Яхшы сүз — җан азыгы.,Доброе слово — пища для души.,Доброе слово лечит и радует.,A kind word is food for the soul.,A kind word heals and gladdens.,Tatlı söz can azığıdır.,Güzel söz iyileştirir ve sevindirir.,Hyvä sana on sielun ravintoa.,Ystävällinen sana parantaa ja ilahduttaa.
+Эш беткәч уйнарга ярый.,"Когда дело сделано, можно и поиграть.","Сначала работа, потом отдых (кончил дело — гуляй смело).","When the work is done, you may play.","Work first, then rest.",İş bitince oynamak serbest.,"Önce iş, sonra dinlenme.","Kun työ on tehty, saa leikkiä.","Ensin työ, sitten lepo."
+Хезмәт кешене бизи.,Труд украшает человека.,Уважение приходит через труд.,Labour adorns a person.,Respect is earned through work.,Emek insanı güzelleştirir.,Saygı emekle kazanılır.,Työ kaunistaa ihmistä.,Kunnioitus ansaitaan työllä.
+"Сүз — көмеш, сүзсезлек — алтын.","Слово — серебро, молчание — золото.",Иногда лучше промолчать.,"Speech is silver, silence is gold.",Sometimes it is better to stay silent.,Söz gümüşse sükût altındır.,Bazen susmak daha iyidir.,"Puhuminen on hopeaa, vaikeneminen kultaa.",Joskus on parempi olla hiljaa.
+Туган җирнең туфрагы да шифалы.,Даже земля родного края целебна.,Родина даёт силы.,Even the soil of one's homeland heals.,The homeland gives strength.,Doğduğun toprağın bile şifası var.,Vatan insana güç verir.,Kotimaan multakin parantaa.,Kotimaa antaa voimaa.
+Күршең тыныч — син тыныч.,Спокоен сосед — спокоен и ты.,Живите в мире с соседями.,"If your neighbour is at peace, so are you.",Live in peace with your neighbours.,Komşun huzurluysa sen de huzurlusun.,Komşularınla barış içinde yaşa.,"Kun naapurisi on rauhassa, olet sinäkin.",Elä sovussa naapuriesi kanssa.
