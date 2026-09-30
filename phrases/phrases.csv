@@ -1,31 +1,31 @@
-tt,ru,quiz_word,right,wrong1,wrong2
-Исәнмесез!,Здравствуйте!,Рәхмәт,спасибо,пожалуйста,извините
-Хәлләрегез ничек?,Как ваши дела?,Ничек,как,где,когда
-"Яхшы, рәхмәт.","Хорошо, спасибо.",Яхшы,хорошо,плохо,быстро
-Сезнең исемегез ничек?,Как вас зовут?,Исем,имя,лицо,год
-Минем исемем Марат.,Меня зовут Марат.,Мин,я,ты,он
-Сез татарча сөйләшәсезме?,Вы говорите по-татарски?,Сөйләшергә,разговаривать,слушать,писать
-Мин бераз гына аңлыйм.,Я немного понимаю.,Аңларга,понимать,помнить,ждать
-"Кабатлагыз әле, зинһар.","Повторите, пожалуйста.",Зинһар,пожалуйста,конечно,никогда
-Бу күпме тора?,Сколько это стоит?,Күпме,сколько,где,почему
-Кибет кайда?,Где магазин?,Кайда,где,куда,зачем
-Миңа су бирегез әле.,"Дайте мне, пожалуйста, воды.",Су,вода,молоко,чай
-Бик тәмле!,Очень вкусно!,Тәмле,вкусный,красивый,тёплый
-Хәерле иртә!,Доброе утро!,Иртә,утро,вечер,ночь
-Хәерле кич!,Добрый вечер!,Кич,вечер,день,утро
-Сау булыгыз!,До свидания! (Будьте здоровы!),Сау,здоровый,большой,добрый
-Гафу итегез.,Извините.,Гафу итәргә,прощать,благодарить,спрашивать
-Әниеңә сәлам әйт.,Передай привет маме.,Сәлам,привет,подарок,письмо
-Бүген һава бик матур.,Сегодня очень хорошая погода.,Бүген,сегодня,вчера,завтра
-Иртәгә күрешербез.,Увидимся завтра.,Иртәгә,завтра,сегодня,вчера
-Мин сине яратам.,Я тебя люблю.,Яратырга,любить,знать,ждать
-Кайчан кайтасың?,Когда вернёшься домой?,Кайчан,когда,где,сколько
-Өйдә кем бар?,Кто дома?,Өй,дом,двор,улица
-Ашарга утырыгыз!,Садитесь кушать!,Утырырга,садиться,вставать,бежать
-Ярдәм итегез әле!,"Помогите, пожалуйста!",Ярдәм,помощь,работа,отдых
-Мин эшкә барам.,Я иду на работу.,Эш,работа,школа,магазин
-Балалар кайда?,Где дети?,Бала,ребёнок,бабушка,брат
-Бәйрәм белән котлыйм!,Поздравляю с праздником!,Бәйрәм,праздник,подарок,гость
-Туган көнең белән!,С днём рождения!,Көн,день,ночь,неделя
-Кунакка килегез!,Приходите в гости!,Кунак,гость,сосед,друг
-Татар телен өйрәнәм.,Я учу татарский язык.,Тел,язык,слово,книга
+tt,ru,en,tr,fi,quiz_word,right,right_en,right_tr,right_fi
+Исәнмесез!,Здравствуйте!,Hello!,Merhaba!,Hyvää päivää!,Рәхмәт,спасибо,thank you,teşekkürler,kiitos
+Хәлләрегез ничек?,Как ваши дела?,How are you?,Nasılsınız?,Mitä kuuluu?,Ничек,как,how,nasıl,miten
+"Яхшы, рәхмәт.","Хорошо, спасибо.","Fine, thank you.","İyiyim, teşekkürler.","Hyvin, kiitos.",Яхшы,хорошо,good,iyi,hyvä
+Сезнең исемегез ничек?,Как вас зовут?,What is your name?,Adınız ne?,Mikä teidän nimenne on?,Исем,имя,name,isim,nimi
+Минем исемем Марат.,Меня зовут Марат.,My name is Marat.,Benim adım Marat.,Nimeni on Marat.,Мин,я,I,ben,minä
+Сез татарча сөйләшәсезме?,Вы говорите по-татарски?,Do you speak Tatar?,Tatarca konuşuyor musunuz?,Puhutteko tataaria?,Сөйләшергә,разговаривать,to speak,konuşmak,puhua
+Мин бераз гына аңлыйм.,Я немного понимаю.,I understand a little.,Biraz anlıyorum.,Ymmärrän vähän.,Аңларга,понимать,to understand,anlamak,ymmärtää
+"Кабатлагыз әле, зинһар.","Повторите, пожалуйста.",Please repeat.,Lütfen tekrar edin.,"Toistakaa, olkaa hyvä.",Зинһар,пожалуйста,please,lütfen,ole hyvä
+Бу күпме тора?,Сколько это стоит?,How much is this?,Bu ne kadar?,Paljonko tämä maksaa?,Күпме,сколько,how much,ne kadar,paljonko
+Кибет кайда?,Где магазин?,Where is the shop?,Dükkan nerede?,Missä kauppa on?,Кайда,где,where,nerede,missä
+Миңа су бирегез әле.,"Дайте мне, пожалуйста, воды.",Please give me some water.,Bana biraz su verir misiniz?,"Antakaa minulle vettä, olkaa hyvä.",Су,вода,water,su,vesi
+Бик тәмле!,Очень вкусно!,Very tasty!,Çok lezzetli!,Todella herkullista!,Тәмле,вкусный,tasty,lezzetli,herkullinen
+Хәерле иртә!,Доброе утро!,Good morning!,Günaydın!,Hyvää huomenta!,Иртә,утро,morning,sabah,aamu
+Хәерле кич!,Добрый вечер!,Good evening!,İyi akşamlar!,Hyvää iltaa!,Кич,вечер,evening,akşam,ilta
+Сау булыгыз!,До свидания! (Будьте здоровы!),Goodbye! (Stay healthy!),Hoşça kalın!,Näkemiin!,Сау,здоровый,healthy,sağlıklı,terve
+Гафу итегез.,Извините.,Excuse me.,Özür dilerim.,Anteeksi.,Гафу итәргә,прощать,to forgive,affetmek,antaa anteeksi
+Әниеңә сәлам әйт.,Передай привет маме.,Say hello to your mom.,Annene selam söyle.,Sano terveisiä äidillesi.,Сәлам,привет,hello,selam,hei
+Бүген һава бик матур.,Сегодня очень хорошая погода.,The weather is beautiful today.,Bugün hava çok güzel.,Tänään on todella kaunis sää.,Бүген,сегодня,today,bugün,tänään
+Иртәгә күрешербез.,Увидимся завтра.,See you tomorrow.,Yarın görüşürüz.,Nähdään huomenna.,Иртәгә,завтра,tomorrow,yarın,huomenna
+Мин сине яратам.,Я тебя люблю.,I love you.,Seni seviyorum.,Minä rakastan sinua.,Яратырга,любить,to love,sevmek,rakastaa
+Кайчан кайтасың?,Когда вернёшься домой?,When will you come home?,Eve ne zaman döneceksin?,Milloin tulet kotiin?,Кайчан,когда,when,ne zaman,milloin
+Өйдә кем бар?,Кто дома?,Who is at home?,Evde kim var?,Kuka on kotona?,Өй,дом,house,ev,talo
+Ашарга утырыгыз!,Садитесь кушать!,Sit down to eat!,Yemeğe buyurun!,Käykää syömään!,Утырырга,садиться,to sit,oturmak,istua
+Ярдәм итегез әле!,"Помогите, пожалуйста!",Please help!,Lütfen yardım edin!,"Auttakaa, olkaa hyvä!",Ярдәм,помощь,help,yardım,apu
+Мин эшкә барам.,Я иду на работу.,I am going to work.,İşe gidiyorum.,Menen töihin.,Эш,работа,work,iş,työ
+Балалар кайда?,Где дети?,Where are the children?,Çocuklar nerede?,Missä lapset ovat?,Бала,ребёнок,child,çocuk,lapsi
+Бәйрәм белән котлыйм!,Поздравляю с праздником!,Happy holiday!,Bayramınız kutlu olsun!,Hyvää juhlaa!,Бәйрәм,праздник,holiday,bayram,juhla
+Туган көнең белән!,С днём рождения!,Happy birthday!,Doğum günün kutlu olsun!,Hyvää syntymäpäivää!,Көн,день,day,gün,päivä
+Кунакка килегез!,Приходите в гости!,Come visit us!,Bize misafirliğe gelin!,Tulkaa kylään!,Кунак,гость,guest,misafir,vieras
+Татар телен өйрәнәм.,Я учу татарский язык.,I am learning Tatar.,Tatarca öğreniyorum.,Opiskelen tataaria.,Тел,язык,language,dil,kieli
