@@ -1,31 +1,31 @@
-lesson,tt,ru
-Сәламләү — Приветствия,Исәнмесез!,Здравствуйте!
-Сәламләү — Приветствия,Сәлам!,Привет!
-Сәламләү — Приветствия,Хәлләрегез ничек?,Как ваши дела?
-Сәламләү — Приветствия,"Яхшы, рәхмәт.","Хорошо, спасибо."
-Сәламләү — Приветствия,Хәерле иртә!,Доброе утро!
-Сәламләү — Приветствия,Сау булыгыз!,До свидания!
-Танышу — Знакомство,Сезнең исемегез ничек?,Как вас зовут?
-Танышу — Знакомство,Минем исемем Марат.,Меня зовут Марат.
-Танышу — Знакомство,Сез кайдан?,Вы откуда?
-Танышу — Знакомство,Мин Казаннан.,Я из Казани.
-Танышу — Знакомство,Танышуыма шатмын.,Рад знакомству.
-Танышу — Знакомство,Сез татарча сөйләшәсезме?,Вы говорите по-татарски?
-Гаилә — Семья,Бу минем әнием.,Это моя мама.
-Гаилә — Семья,Бу минем әтием.,Это мой папа.
-Гаилә — Семья,Минем абыем бар.,У меня есть старший брат.
-Гаилә — Семья,Минем апам бар.,У меня есть старшая сестра.
-Гаилә — Семья,Әби белән бабай авылда яши.,Бабушка с дедушкой живут в деревне.
-Гаилә — Семья,Балалар кайда?,Где дети?
-Кибеттә — В магазине,Бу күпме тора?,Сколько это стоит?
-Кибеттә — В магазине,Миңа икмәк кирәк.,Мне нужен хлеб.
-Кибеттә — В магазине,Сөт бармы?,Молоко есть?
-Кибеттә — В магазине,Бик кыйммәт.,Очень дорого.
-Кибеттә — В магазине,Кибет кайда?,Где магазин?
-Кибеттә — В магазине,"Рәхмәт, сау булыгыз!","Спасибо, до свидания!"
-Өйдә — Дома,Ашарга утырыгыз!,Садитесь кушать!
-Өйдә — Дома,Бик тәмле!,Очень вкусно!
-Өйдә — Дома,Чәй эчәбезме?,Попьём чаю?
-Өйдә — Дома,Миңа су бирегез әле.,"Дайте мне, пожалуйста, воды."
-Өйдә — Дома,Мин ардым.,Я устал.
-Өйдә — Дома,Хәерле төн!,Спокойной ночи!
+lesson,title_ru,title_en,title_tr,title_fi,tt,ru,en,tr,fi
+Сәламләү,Приветствия,Greetings,Selamlaşma,Tervehdykset,Исәнмесез!,Здравствуйте!,Hello!,Merhaba!,Hyvää päivää!
+Сәламләү,Приветствия,Greetings,Selamlaşma,Tervehdykset,Сәлам!,Привет!,Hi!,Selam!,Hei!
+Сәламләү,Приветствия,Greetings,Selamlaşma,Tervehdykset,Хәлләрегез ничек?,Как ваши дела?,How are you?,Nasılsınız?,Mitä kuuluu?
+Сәламләү,Приветствия,Greetings,Selamlaşma,Tervehdykset,"Яхшы, рәхмәт.","Хорошо, спасибо.","Fine, thank you.","İyiyim, teşekkürler.","Hyvin, kiitos."
+Сәламләү,Приветствия,Greetings,Selamlaşma,Tervehdykset,Хәерле иртә!,Доброе утро!,Good morning!,Günaydın!,Hyvää huomenta!
+Сәламләү,Приветствия,Greetings,Selamlaşma,Tervehdykset,Сау булыгыз!,До свидания!,Goodbye!,Hoşça kalın!,Näkemiin!
+Танышу,Знакомство,Getting acquainted,Tanışma,Tutustuminen,Сезнең исемегез ничек?,Как вас зовут?,What is your name?,Adınız ne?,Mikä teidän nimenne on?
+Танышу,Знакомство,Getting acquainted,Tanışma,Tutustuminen,Минем исемем Марат.,Меня зовут Марат.,My name is Marat.,Benim adım Marat.,Nimeni on Marat.
+Танышу,Знакомство,Getting acquainted,Tanışma,Tutustuminen,Сез кайдан?,Вы откуда?,Where are you from?,Nerelisiniz?,Mistä olette kotoisin?
+Танышу,Знакомство,Getting acquainted,Tanışma,Tutustuminen,Мин Казаннан.,Я из Казани.,I am from Kazan.,Kazanlıyım.,Olen Kazanista.
+Танышу,Знакомство,Getting acquainted,Tanışma,Tutustuminen,Танышуыма шатмын.,Рад знакомству.,Nice to meet you.,Tanıştığıma memnun oldum.,Hauska tutustua.
+Танышу,Знакомство,Getting acquainted,Tanışma,Tutustuminen,Сез татарча сөйләшәсезме?,Вы говорите по-татарски?,Do you speak Tatar?,Tatarca konuşuyor musunuz?,Puhutteko tataaria?
+Гаилә,Семья,Family,Aile,Perhe,Бу минем әнием.,Это моя мама.,This is my mother.,Bu benim annem.,Tämä on äitini.
+Гаилә,Семья,Family,Aile,Perhe,Бу минем әтием.,Это мой папа.,This is my father.,Bu benim babam.,Tämä on isäni.
+Гаилә,Семья,Family,Aile,Perhe,Минем абыем бар.,У меня есть старший брат.,I have an older brother.,Bir ağabeyim var.,Minulla on isoveli.
+Гаилә,Семья,Family,Aile,Perhe,Минем апам бар.,У меня есть старшая сестра.,I have an older sister.,Bir ablam var.,Minulla on isosisko.
+Гаилә,Семья,Family,Aile,Perhe,Әби белән бабай авылда яши.,Бабушка с дедушкой живут в деревне.,Grandma and grandpa live in the village.,Büyükannem ve büyükbabam köyde yaşıyor.,Isoäiti ja isoisä asuvat kylässä.
+Гаилә,Семья,Family,Aile,Perhe,Балалар кайда?,Где дети?,Where are the children?,Çocuklar nerede?,Missä lapset ovat?
+Кибеттә,В магазине,At the shop,Dükkanda,Kaupassa,Бу күпме тора?,Сколько это стоит?,How much is this?,Bu ne kadar?,Paljonko tämä maksaa?
+Кибеттә,В магазине,At the shop,Dükkanda,Kaupassa,Миңа икмәк кирәк.,Мне нужен хлеб.,I need bread.,Bana ekmek lazım.,Tarvitsen leipää.
+Кибеттә,В магазине,At the shop,Dükkanda,Kaupassa,Сөт бармы?,Молоко есть?,Is there milk?,Süt var mı?,Onko maitoa?
+Кибеттә,В магазине,At the shop,Dükkanda,Kaupassa,Бик кыйммәт.,Очень дорого.,Very expensive.,Çok pahalı.,Todella kallis.
+Кибеттә,В магазине,At the shop,Dükkanda,Kaupassa,Кибет кайда?,Где магазин?,Where is the shop?,Dükkan nerede?,Missä kauppa on?
+Кибеттә,В магазине,At the shop,Dükkanda,Kaupassa,"Рәхмәт, сау булыгыз!","Спасибо, до свидания!","Thank you, goodbye!","Teşekkürler, hoşça kalın!","Kiitos, näkemiin!"
+Өйдә,Дома,At home,Evde,Kotona,Ашарга утырыгыз!,Садитесь кушать!,Sit down to eat!,Yemeğe buyurun!,Käykää syömään!
+Өйдә,Дома,At home,Evde,Kotona,Бик тәмле!,Очень вкусно!,Very tasty!,Çok lezzetli!,Todella herkullista!
+Өйдә,Дома,At home,Evde,Kotona,Чәй эчәбезме?,Попьём чаю?,Shall we drink tea?,Çay içelim mi?,Juodaanko teetä?
+Өйдә,Дома,At home,Evde,Kotona,Миңа су бирегез әле.,"Дайте мне, пожалуйста, воды.",Please give me some water.,Bana biraz su verir misiniz?,"Antakaa minulle vettä, olkaa hyvä."
+Өйдә,Дома,At home,Evde,Kotona,Мин ардым.,Я устал.,I am tired.,Yoruldum.,Olen väsynyt.
+Өйдә,Дома,At home,Evde,Kotona,Хәерле төн!,Спокойной ночи!,Good night!,İyi geceler!,Hyvää yötä!
