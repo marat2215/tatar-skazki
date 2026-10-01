@@ -53,7 +53,7 @@ def synthesize(text, out_mp3, title=None, speed=SPEED):
             w.setframerate(rate)
             w.writeframes(audio.tobytes())
         codec = (["-c:a", "libopus", "-b:a", "48k"] if str(out_mp3).endswith(".ogg")
-                 else ["-c:a", "libmp3lame", "-b:a", "96k"])
+                 else ["-c:a", "libmp3lame", "-b:a", "96k" if len(text) > 300 else "48k"])
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", tmp.name,
                         *codec, str(out_mp3)], check=True)
     return out_mp3
