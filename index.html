@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tatarlarga — татарский язык каждый день</title>
+<meta name="description" content="Бесплатный Telegram-бот для изучения татарского языка: сказки с озвучкой, слово дня, пословицы, уроки, мифы и игры.">
+<meta property="og:title" content="Tatarlarga — татарский язык каждый день">
+<meta property="og:description" content="Сказки, слово дня, пословицы, уроки, мифы и игры в Telegram. Бесплатно.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+<script src="games/common.js"></script>
+<style>
+:root{--bg:#f7f3ea;--fg:#1d2a22;--muted:#5c6b61;--card:#fff;--bd:#e4dccb;--acc:#1f7a4d;--acc2:#c8892b}
+@media(prefers-color-scheme:dark){:root{--bg:#121815;--fg:#ecf2ed;--muted:#9fb0a5;--card:#1c241f;--bd:#2f3b34;--acc:#3fb57a;--acc2:#e0a54a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:960px;margin:auto;padding:0 16px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:14px 0;gap:8px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px;text-decoration:none;color:inherit}
+.sw{display:flex;gap:6px;flex-wrap:wrap}
+.sw button{border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:999px;padding:5px 11px;font-size:14px;cursor:pointer}
+.sw button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.hero{text-align:center;padding:48px 0 36px}
+.hero .moon{font-size:64px}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.1;margin:10px 0}
+.lead{font-size:clamp(17px,2.4vw,21px);color:var(--muted);max-width:640px;margin:0 auto 26px}
+.cta{display:inline-flex;align-items:center;gap:10px;background:var(--acc);color:#fff;text-decoration:none;font-weight:700;font-size:19px;padding:15px 28px;border-radius:14px;box-shadow:0 6px 20px #1f7a4d40}
+.cta:hover{filter:brightness(1.08)}
+.sub{margin-top:10px;font-size:14px;color:var(--muted)}
+h2{font-size:28px;margin:44px 0 16px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.card .i{font-size:34px}.card b{display:block;font-size:18px;margin:6px 0 4px}.card p{margin:0;color:var(--muted);font-size:15px}
+a.card{text-decoration:none;color:inherit;transition:transform .15s}a.card:hover{transform:translateY(-3px)}
+.why{background:var(--card);border:1px solid var(--bd);border-left:5px solid var(--acc2);border-radius:14px;padding:20px;font-size:18px}
+.word{text-align:center;font-size:clamp(26px,5vw,40px);font-weight:800;margin:6px 0}
+footer{margin:56px 0 30px;text-align:center;color:var(--muted);font-size:15px}
+footer a{color:var(--acc)}
+</style></head><body>
+<div class="wrap">
+<nav><a class="logo" href="#">🌙 Tatarlarga</a>
+ <div class="sw" id="langs"></div><div class="sw" id="alpha"></div></nav>
+
+<section class="hero">
+ <div class="moon">🌙</div>
+ <h1 data-tt="Татарча өйрәник!"></h1>
+ <p class="lead" data-t="lead"></p>
+ <a class="cta" href="https://t.me/TatarlargaBot" target="_blank" rel="noopener">✈️ <span data-t="open"></span></a>
+ <div class="sub" data-t="free"></div>
+</section>
+
+<div class="why" data-t="why"></div>
+
+<h2 data-t="inside"></h2>
+<div class="grid" id="feat"></div>
+
+<h2 data-t="games"></h2>
+<div class="grid" id="games"></div>
+
+<h2 data-t="myths"></h2>
+<div class="grid" id="myths"></div>
+
+<h2 data-t="sample"></h2>
+<div class="card"><div class="word" data-tt="Исәнмесез!"></div><p style="text-align:center" data-t="hello"></p></div>
+
+<footer><span data-t="contact"></span> <a href="https://t.me/marat_2215">@marat_2215</a><br>
+ <a href="https://t.me/TatarlargaBot">@TatarlargaBot</a> · Казань · 2026</footer>
+</div>
+<script>
+const T={
+lead:{ru:"Бесплатный Telegram-бот, с которым татарский язык становится частью каждого дня — для детей и взрослых.",en:"A free Telegram bot that makes the Tatar language part of every day — for children and adults.",tr:"Tatarcayı her günün parçası yapan ücretsiz bir Telegram botu — çocuklar ve yetişkinler için.",fi:"Ilmainen Telegram-botti, joka tekee tataarin kielestä osan jokaista päivää — lapsille ja aikuisille."},
+open:{ru:"Открыть бота в Telegram",en:"Open the bot in Telegram",tr:"Botu Telegram'da aç",fi:"Avaa botti Telegramissa"},
+free:{ru:"Бесплатно · без рекламы · кириллица или латиница",en:"Free · no ads · Cyrillic or Latin script",tr:"Ücretsiz · reklamsız · Kiril veya Latin alfabesi",fi:"Ilmainen · ei mainoksia · kyrilliset tai latinalaiset aakkoset"},
+why:{ru:"💚 Татарский всё реже звучит в семьях, особенно вдали от Татарстана. Этот проект — попытка вернуть язык домой: понемногу, каждый день, прямо в телефоне.",en:"💚 Tatar is heard less and less in families, especially far from Tatarstan. This project is an attempt to bring the language back home — a little every day, right on your phone.",tr:"💚 Tatarca ailelerde, özellikle Tataristan'dan uzakta, giderek daha az konuşuluyor. Bu proje dili eve geri getirme çabası: her gün biraz, doğrudan telefonunuzda.",fi:"💚 Tataaria kuulee perheissä yhä harvemmin, varsinkin kaukana Tatarstanista. Tämä projekti yrittää tuoda kielen takaisin kotiin — vähän joka päivä, suoraan puhelimessa."},
+inside:{ru:"Что внутри",en:"What's inside",tr:"İçinde neler var",fi:"Mitä sisältää"},
+games:{ru:"Игры — играйте прямо в браузере",en:"Games — play right in your browser",tr:"Oyunlar — doğrudan tarayıcıda oyna",fi:"Pelit — pelaa suoraan selaimessa"},
+myths:{ru:"Мифические существа татар",en:"Mythical creatures of the Tatars",tr:"Tatarların mitolojik varlıkları",fi:"Tataarien taruolennot"},
+sample:{ru:"Первое слово",en:"Your first word",tr:"İlk kelimeniz",fi:"Ensimmäinen sanasi"},
+hello:{ru:"«Здравствуйте!» — вежливое приветствие",en:"“Hello!” — a polite greeting",tr:"“Merhaba!” — kibar bir selamlama",fi:"”Hei!” — kohtelias tervehdys"},
+contact:{ru:"Отзывы и идеи:",en:"Feedback and ideas:",tr:"Görüş ve öneriler:",fi:"Palaute ja ideat:"}};
+const F=[["🌙","Әкиятләр",{ru:["Сказки","с озвучкой на татарском — на ночь"],en:["Fairy tales","read aloud in Tatar — for bedtime"],tr:["Masallar","Tatarca seslendirmeli — uyku öncesi"],fi:["Sadut","tataariksi luettuina — iltasaduiksi"]}],
+["☀️","Көн сүзе",{ru:["Слово дня","каждое утро с произношением"],en:["Word of the day","every morning, with pronunciation"],tr:["Günün kelimesi","her sabah, telaffuzuyla"],fi:["Päivän sana","joka aamu ääntämisen kanssa"]}],
+["📜","Мәкальләр",{ru:["Пословицы","народная мудрость с объяснением"],en:["Proverbs","folk wisdom, explained"],tr:["Atasözleri","açıklamalı halk bilgeliği"],fi:["Sananlaskut","kansanviisautta selityksineen"]}],
+["❓","Викторина",{ru:["Викторины","проверьте себя и копите очки"],en:["Quizzes","test yourself and earn points"],tr:["Bilgi yarışmaları","kendini sına, puan topla"],fi:["Tietovisat","testaa itsesi ja kerää pisteitä"]}],
+["🎓","Дәресләр",{ru:["Уроки","фразы для жизни: семья, магазин, дом"],en:["Lessons","everyday phrases: family, shop, home"],tr:["Dersler","günlük ifadeler: aile, market, ev"],fi:["Oppitunnit","arjen fraaseja: perhe, kauppa, koti"]}],
+["🌐","RU · EN · TR · FI",{ru:["4 языка","интерфейс на русском, английском, турецком и финском"],en:["4 languages","Russian, English, Turkish and Finnish interface"],tr:["4 dil","Rusça, İngilizce, Türkçe ve Fince arayüz"],fi:["4 kieltä","venäjän-, englannin-, turkin- ja suomenkielinen käyttöliittymä"]}]];
+const G=[["shurale.html","🌲","Шүрәле",{ru:"Убегите от Шурале, выбирая верный перевод",en:"Escape Shurale by picking the right translation",tr:"Doğru çeviriyi seçerek Şüräle'den kaç",fi:"Pakene Šürälea valitsemalla oikea käännös"}],
+["echpochmak.html","🥟","Эчпочмак пешер",{ru:"Готовьте с бабушкой по татарским рецептам",en:"Cook with grandma using Tatar recipes",tr:"Büyükanneyle Tatar yemekleri pişir",fi:"Kokkaa mummon kanssa tataarilaisia ruokia"}],
+["suz.html","🟩","Сүз уены",{ru:"Угадайте слово дня за 6 попыток",en:"Guess the word of the day in 6 tries",tr:"Günün kelimesini 6 denemede bul",fi:"Arvaa päivän sana 6 yrityksellä"}]];
+const M=[["🌲","Шүрәле",{ru:"лесной дух с длинными пальцами",en:"a forest spirit with long fingers",tr:"uzun parmaklı orman ruhu",fi:"pitkäsorminen metsänhenki"}],
+["🧜‍♀️","Су анасы",{ru:"хозяйка вод с золотым гребнем",en:"water mother with a golden comb",tr:"altın taraklı su anası",fi:"veden äiti kultaisella kammalla"}],
+["🧛","Убыр",{ru:"злой дух, летающий огненным шаром",en:"an evil spirit flying as a fireball",tr:"ateş topu gibi uçan kötü ruh",fi:"tulipallona lentävä paha henki"}],
+["🐉","Аждаһа",{ru:"дракон — Зилант на гербе Казани",en:"a dragon — Zilant on Kazan's coat of arms",tr:"ejderha — Kazan armasındaki Zilant",fi:"lohikäärme — Zilant Kazanin vaakunassa"}]];
+let lang=LANG, alpha=["cyr","lat"].includes(Q.get("a"))?Q.get("a"):"cyr";
+const T2=s=>alpha==="lat"?lat(s):s, U=o=>o[lang]||o.ru;
+function render(){
+ document.documentElement.lang=lang;
+ document.querySelectorAll("[data-t]").forEach(e=>e.textContent=U(T[e.dataset.t]));
+ document.querySelectorAll("[data-tt]").forEach(e=>e.textContent=T2(e.dataset.tt));
+ const qs=`?lang=${lang}&a=${alpha}`;
+ document.getElementById("feat").innerHTML=F.map(([i,tt,o])=>`<div class="card"><div class="i">${i}</div><b>${U(o)[0]}</b><p><i>${T2(tt)}</i> — ${U(o)[1]}</p></div>`).join("");
+ document.getElementById("games").innerHTML=G.map(([u,i,n,d])=>`<a class="card" href="games/${u}${qs}"><div class="i">${i}</div><b>${T2(n)}</b><p>${U(d)}</p></a>`).join("");
+ document.getElementById("myths").innerHTML=M.map(([i,n,d])=>`<div class="card"><div class="i">${i}</div><b>${T2(n)}</b><p>${U(d)}</p></div>`).join("");
+ document.getElementById("langs").innerHTML=["ru","en","tr","fi"].map(l=>`<button class="${l===lang?"on":""}" onclick="lang='${l}';try{localStorage.setItem('lang',lang)}catch(e){};render()">${l.toUpperCase()}</button>`).join("");
+ document.getElementById("alpha").innerHTML=[["cyr","Кк"],["lat","Qq"]].map(([a,x])=>`<button class="${a===alpha?"on":""}" onclick="alpha='${a}';render()">${x}</button>`).join("");
+}
+render();
+</script></body></html>
