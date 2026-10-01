@@ -201,6 +201,7 @@ BTN = {  # кнопки меню на языке пользователя
     "lesson": {"ru": "🎓 Уроки", "en": "🎓 Lessons", "tr": "🎓 Dersler", "fi": "🎓 Oppitunnit"},
     "myth": {"ru": "🐉 Мифы", "en": "🐉 Myths", "tr": "🐉 Mitler", "fi": "🐉 Myytit"},
     "set": {"ru": "⚙️ Настройки", "en": "⚙️ Settings", "tr": "⚙️ Ayarlar", "fi": "⚙️ Asetukset"},
+    "admin": {"ru": "✍️ Написать админу", "en": "✍️ Contact admin", "tr": "✍️ Yöneticiye yaz", "fi": "✍️ Kirjoita ylläpitäjälle"},
     "games": {"ru": "🎮 Игры", "en": "🎮 Games", "tr": "🎮 Oyunlar", "fi": "🎮 Pelit"},
 }
 OLD_BTN = {"story": "🌙 Әкиятләр", "word": "☀️ Көн сүзе", "prov": "📜 Мәкальләр", "quiz": "❓ Викторина",
@@ -232,7 +233,7 @@ def main_kb(u):
         [KeyboardButton(text=b("story", L)), KeyboardButton(text=b("word", L))],
         [KeyboardButton(text=b("prov", L)), KeyboardButton(text=b("quiz", L))],
         [KeyboardButton(text=b("lesson", L)), KeyboardButton(text=b("myth", L))],
-        [KeyboardButton(text=b("set", L))],
+        [KeyboardButton(text=b("set", L)), KeyboardButton(text=b("admin", L))],
         [game("🌲 " + tt1("Шүрәле", A), "shurale.html"), game("🥟 " + tt1("Эчпочмак", A), "echpochmak.html"),
          game("🟩 " + tt1("Сүз уены", A), "suz.html")],
     ])
@@ -560,6 +561,19 @@ async def settings_cb(c: CallbackQuery):
     if c.data != "sub":  # обновляем ссылки игр под новый язык/алфавит
         await set_menu_button(c.bot, u)
         await c.message.answer(t("menu", u["lang"]), reply_markup=main_kb(u))
+
+
+# --- связь с админом
+ADMIN_URL = "https://t.me/marat_2215"
+
+
+@dp.message(is_btn("admin"))
+@dp.message(Command("feedback"))
+async def admin_contact(m: Message):
+    u = user(m.from_user.id)
+    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+        text=b("admin", u["lang"]), url=ADMIN_URL)]])
+    await m.answer(t("admin_msg", u["lang"]), reply_markup=kb)
 
 
 # --- игры (команда /games)
