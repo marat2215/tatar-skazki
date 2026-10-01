@@ -193,9 +193,32 @@ async def send_voice(bot, chat_id, text, caption=None, speed=1.2, markup=None):
 
 
 # ---------------------------------------------------------------- клавиатуры
-B_STORY, B_WORD, B_PROV = "🌙 Әкиятләр", "☀️ Көн сүзе", "📜 Мәкальләр"
-B_QUIZ, B_LESSON, B_SET = "❓ Викторина", "🎓 Дәресләр", "⚙️ Көйләүләр"
-B_MYTH = "🐉 Мифик затлар"
+BTN = {  # кнопки меню на языке пользователя
+    "story": {"ru": "🌙 Сказки", "en": "🌙 Fairy tales", "tr": "🌙 Masallar", "fi": "🌙 Sadut"},
+    "word": {"ru": "☀️ Слово дня", "en": "☀️ Word of the day", "tr": "☀️ Günün kelimesi", "fi": "☀️ Päivän sana"},
+    "prov": {"ru": "📜 Пословицы", "en": "📜 Proverbs", "tr": "📜 Atasözleri", "fi": "📜 Sananlaskut"},
+    "quiz": {"ru": "❓ Викторина", "en": "❓ Quiz", "tr": "❓ Bilgi yarışması", "fi": "❓ Tietovisa"},
+    "lesson": {"ru": "🎓 Уроки", "en": "🎓 Lessons", "tr": "🎓 Dersler", "fi": "🎓 Oppitunnit"},
+    "myth": {"ru": "🐉 Мифы", "en": "🐉 Myths", "tr": "🐉 Mitler", "fi": "🐉 Myytit"},
+    "set": {"ru": "⚙️ Настройки", "en": "⚙️ Settings", "tr": "⚙️ Ayarlar", "fi": "⚙️ Asetukset"},
+    "games": {"ru": "🎮 Игры", "en": "🎮 Games", "tr": "🎮 Oyunlar", "fi": "🎮 Pelit"},
+}
+OLD_BTN = {"story": "🌙 Әкиятләр", "word": "☀️ Көн сүзе", "prov": "📜 Мәкальләр", "quiz": "❓ Викторина",
+           "lesson": "🎓 Дәресләр", "myth": "🐉 Мифик затлар", "set": "⚙️ Көйләүләр"}
+
+
+def b(key, lang):
+    return BTN[key].get(lang) or BTN[key]["ru"]
+
+
+def is_btn(key):
+    """Фильтр: нажата кнопка меню на любом языке (и старые татарские подписи)."""
+    return F.text.in_(set(BTN[key].values()) | {OLD_BTN.get(key, "")})
+
+
+def tt1(text, alpha):
+    """Татарское слово одним алфавитом (для заголовков и кнопок)."""
+    return to_latin(text) if alpha == "lat" else text
 
 
 def games_url(u, page=""):
@@ -204,13 +227,14 @@ def games_url(u, page=""):
 
 def main_kb(u):
     game = lambda title, page: KeyboardButton(text=title, web_app=WebAppInfo(url=games_url(u, page)))  # noqa: E731
+    L, A = u["lang"], u["alpha"]
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
-        [KeyboardButton(text=B_STORY), KeyboardButton(text=B_WORD)],
-        [KeyboardButton(text=B_PROV), KeyboardButton(text=B_QUIZ)],
-        [KeyboardButton(text=B_LESSON), KeyboardButton(text=B_MYTH)],
-        [KeyboardButton(text=B_SET)],
-        [game("🌲 Шүрәле", "shurale.html"), game("🥟 Эчпочмак", "echpochmak.html"),
-         game("🟩 Сүз уены", "suz.html")],
+        [KeyboardButton(text=b("story", L)), KeyboardButton(text=b("word", L))],
+        [KeyboardButton(text=b("prov", L)), KeyboardButton(text=b("quiz", L))],
+        [KeyboardButton(text=b("lesson", L)), KeyboardButton(text=b("myth", L))],
+        [KeyboardButton(text=b("set", L))],
+        [game("🌲 " + tt1("Шүрәле", A), "shurale.html"), game("🥟 " + tt1("Эчпочмак", A), "echpochmak.html"),
+         game("🟩 " + tt1("Сүз уены", A), "suz.html")],
     ])
 
 
@@ -223,7 +247,7 @@ async def set_menu_button(bot, u):
     """Кнопка «Уеннар» слева от поля ввода — открывает меню игр."""
     try:
         await bot.set_chat_menu_button(chat_id=u["id"], menu_button=MenuButtonWebApp(
-            text="🎮 Уеннар", web_app=WebAppInfo(url=games_url(u))))
+            text=b("games", u["lang"]), web_app=WebAppInfo(url=games_url(u))))
     except Exception as e:  # noqa: BLE001
         log.warning("Кнопка меню: %s", e)
 
@@ -268,7 +292,7 @@ async def start_alpha(c: CallbackQuery):
 
 
 # --- сказки
-@dp.message(F.text == B_STORY)
+@dp.message(is_btn("story"))
 async def story_list(m: Message):
     u = user(m.from_user.id)
     rows = [[(short(s["title"], u["alpha"]), f"st:{i}")] for i, s in enumerate(stories())]
@@ -283,7 +307,7 @@ async def send_story(bot, chat_id, i, u):
     ready = ROOT / "audio" / f"{s['id']}.mp3"
     if ready.exists():
         await bot.send_audio(chat_id, FSInputFile(ready), title=s["title"],
-                             performer="Татар әкиятләре", caption=t("listen", u["lang"]))
+                             performer=tt1("Татар әкиятләре", u["alpha"]), caption=t("listen", u["lang"]))
     else:
         await send_voice(bot, chat_id, f"{s['title']}\n{s['body']}", speed=1.15,
                          caption=t("listen", u["lang"]))
@@ -309,13 +333,13 @@ async def send_word(bot, chat_id, u, i=None):
         return
     r = ph[today_index(len(ph)) if i is None else i % len(ph)]
     lang = u["lang"]
-    cap = (f"☀️ Көн сүзе — {t('word_title', lang)}\n\n🗣 {show(r['tt'], u['alpha'])}\n"
+    cap = (f"☀️ {tt1('Көн сүзе', u['alpha'])} — {t('word_title', lang)}\n\n🗣 {show(r['tt'], u['alpha'])}\n"
            f"💬 {tr(r, lang)}\n\n{t('repeat', lang)}")
     await send_voice(bot, chat_id, f"{r['tt']}\n{r['tt']}", caption=cap, speed=1.25,
                      markup=ikb([[(t("more_phrase", lang), "word:rnd")]]))
 
 
-@dp.message(F.text == B_WORD)
+@dp.message(is_btn("word"))
 async def word(m: Message):
     await send_word(m.bot, m.chat.id, user(m.from_user.id))
 
@@ -327,7 +351,7 @@ async def word_rnd(c: CallbackQuery):
 
 
 # --- пословицы
-@dp.message(F.text == B_PROV)
+@dp.message(is_btn("prov"))
 @dp.callback_query(F.data == "prov")
 async def proverb(ev):
     msg = ev.message if isinstance(ev, CallbackQuery) else ev
@@ -339,7 +363,7 @@ async def proverb(ev):
     r = random.choice(pr)
     u = user(ev.from_user.id)
     lang = u["lang"]
-    cap = (f"📜 Мәкаль — {t('proverb', lang)}\n\n{show(r['tt'], u['alpha'])}\n\n"
+    cap = (f"📜 {tt1('Мәкаль', u['alpha'])} — {t('proverb', lang)}\n\n{show(r['tt'], u['alpha'])}\n\n"
            f"💬 {tr(r, lang)}\n💡 {tr(r, lang, 'meaning')}")
     await send_voice(msg.bot, msg.chat.id, r["tt"], caption=cap, speed=1.2,
                      markup=ikb([[(t("more_proverb", lang), "prov")]]))
@@ -353,7 +377,7 @@ def myth_kb(u):
     return ikb([btn[i:i + 2] for i in range(0, len(btn), 2)])
 
 
-@dp.message(F.text == B_MYTH)
+@dp.message(is_btn("myth"))
 @dp.callback_query(F.data == "myl")
 async def myth_list(ev):
     msg = ev.message if isinstance(ev, CallbackQuery) else ev
@@ -384,7 +408,7 @@ def quiz_rows():
     return [r for r in phrases() if r.get("quiz_word")]
 
 
-@dp.message(F.text == B_QUIZ)
+@dp.message(is_btn("quiz"))
 @dp.callback_query(F.data == "quiz:next")
 async def quiz(ev):
     msg = ev.message if isinstance(ev, CallbackQuery) else ev
@@ -426,7 +450,7 @@ async def quiz_answer(c: CallbackQuery):
 tests = {}  # uid -> {"lesson": n, "q": k, "ok": m}
 
 
-@dp.message(F.text == B_LESSON)
+@dp.message(is_btn("lesson"))
 async def lesson_list(m: Message, uid=None):
     u = user(uid or m.from_user.id)
     rows = [[(f"{n + 1}. {short(name, u['alpha'])} — {items[0]['title_' + u['lang']]}", f"ls:{n}")]
@@ -512,7 +536,7 @@ def settings_kb(u):
     ])
 
 
-@dp.message(F.text == B_SET)
+@dp.message(is_btn("set"))
 async def settings(m: Message):
     u = user(m.from_user.id)
     await m.answer(t("settings", u["lang"]), reply_markup=settings_kb(u))
@@ -605,7 +629,7 @@ async def main():
     # кнопка «Уеннар» в меню Telegram для всех по умолчанию
     try:
         await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(
-            text="🎮 Уеннар", web_app=WebAppInfo(url=GAMES_URL)))
+            text="🎮 Games", web_app=WebAppInfo(url=GAMES_URL)))
     except Exception as e:  # noqa: BLE001
         log.warning("Кнопка меню: %s", e)
     today = dt.datetime.now(KAZAN).date().isoformat()
