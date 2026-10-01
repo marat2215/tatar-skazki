@@ -126,6 +126,10 @@ def proverbs():
     return _load(ROOT / "content" / "proverbs.csv", _csv)
 
 
+def creatures():
+    return _load(ROOT / "content" / "creatures.csv", _csv)
+
+
 def lessons():
     out = {}
     for r in _load(ROOT / "content" / "lessons.csv", _csv):
@@ -191,6 +195,7 @@ async def send_voice(bot, chat_id, text, caption=None, speed=1.2, markup=None):
 # ---------------------------------------------------------------- клавиатуры
 B_STORY, B_WORD, B_PROV = "🌙 Әкиятләр", "☀️ Көн сүзе", "📜 Мәкальләр"
 B_QUIZ, B_LESSON, B_SET = "❓ Викторина", "🎓 Дәресләр", "⚙️ Көйләүләр"
+B_MYTH = "🐉 Мифик затлар"
 
 
 def games_url(u, page=""):
@@ -202,7 +207,8 @@ def main_kb(u):
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
         [KeyboardButton(text=B_STORY), KeyboardButton(text=B_WORD)],
         [KeyboardButton(text=B_PROV), KeyboardButton(text=B_QUIZ)],
-        [KeyboardButton(text=B_LESSON), KeyboardButton(text=B_SET)],
+        [KeyboardButton(text=B_LESSON), KeyboardButton(text=B_MYTH)],
+        [KeyboardButton(text=B_SET)],
         [game("🌲 Шүрәле", "shurale.html"), game("🥟 Эчпочмак", "echpochmak.html"),
          game("🟩 Сүз уены", "suz.html")],
     ])
@@ -337,6 +343,40 @@ async def proverb(ev):
            f"💬 {tr(r, lang)}\n💡 {tr(r, lang, 'meaning')}")
     await send_voice(msg.bot, msg.chat.id, r["tt"], caption=cap, speed=1.2,
                      markup=ikb([[(t("more_proverb", lang), "prov")]]))
+
+
+# --- мифические существа
+def myth_kb(u):
+    cr = creatures()
+    btn = [(f"{r['emoji']} {short(r['tt'], 'lat' if u['alpha'] == 'lat' else 'cyr')}", f"my:{i}")
+           for i, r in enumerate(cr)]
+    return ikb([btn[i:i + 2] for i in range(0, len(btn), 2)])
+
+
+@dp.message(F.text == B_MYTH)
+@dp.callback_query(F.data == "myl")
+async def myth_list(ev):
+    msg = ev.message if isinstance(ev, CallbackQuery) else ev
+    if isinstance(ev, CallbackQuery):
+        await ev.answer()
+    u = user(ev.from_user.id)
+    await msg.answer(t("myth_list", u["lang"]), reply_markup=myth_kb(u))
+
+
+@dp.callback_query(F.data.startswith("my:"))
+async def myth(c: CallbackQuery):
+    await c.answer()
+    cr = creatures()
+    i = int(c.data[3:])
+    if i >= len(cr):
+        return
+    r = cr[i]
+    u = user(c.from_user.id)
+    lang = u["lang"]
+    cap = f"{r['emoji']} {short(r['tt'], u['alpha'])}\n\n🗣 {show(r['tt_text'], u['alpha'])}\n\n{tr(r, lang)}"
+    nxt = (i + 1) % len(cr)
+    await send_voice(c.bot, c.from_user.id, r["tt_text"], caption=cap, speed=1.15,
+                     markup=ikb([[(t("myth_next", lang), f"my:{nxt}"), (t("myth_all", lang), "myl")]]))
 
 
 # --- викторина
