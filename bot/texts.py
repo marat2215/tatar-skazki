@@ -54,6 +54,10 @@ T = {
                   "fi": "🐉 Tataarilaisen kansanperinteen taruolennot — valitse:"},
     "myth_next": {"ru": "➡️ Следующее", "en": "➡️ Next", "tr": "➡️ Sonraki", "fi": "➡️ Seuraava"},
     "myth_all": {"ru": "📖 Все существа", "en": "📖 All creatures", "tr": "📖 Tüm varlıklar", "fi": "📖 Kaikki olennot"},
+    "admin_msg": {"ru": "💬 Отзывы, идеи, ошибки в переводах — пишите админу, он читает всё. Рәхмәт!",
+                  "en": "💬 Feedback, ideas or translation mistakes — write to the admin, every message is read. Räxmät!",
+                  "tr": "💬 Görüş, öneri veya çeviri hataları — yöneticiye yazın, her mesaj okunur. Räxmät!",
+                  "fi": "💬 Palautetta, ideoita tai käännösvirheitä — kirjoita ylläpitäjälle, jokainen viesti luetaan. Räxmät!"},
     "play": {"ru": "🎮 Играть", "en": "🎮 Play", "tr": "🎮 Oyna", "fi": "🎮 Pelaa"},
     "listen": {"ru": "Әкият тыңлагыз! Хәерле төн!", "en": "Listen to the tale! Xäyerle tön — good night!", "tr": "Masalı dinleyin! Xäyerle tön — iyi geceler!", "fi": "Kuuntele satu! Xäyerle tön — hyvää yötä!"},
 }
