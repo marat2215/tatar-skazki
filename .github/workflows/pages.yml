@@ -1,0 +1,49 @@
+# Сборка сайта tatartel.ru (Next.js, статический экспорт) и публикация на GitHub Pages
+name: pages
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "site/data.json", "audio/**", "games/**", ".github/workflows/pages.yml"]
+  workflow_run:
+    workflows: [site, unpack]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Сборка
+        working-directory: web
+        run: |
+          mkdir -p data
+          cp ../site/data.json data/content.json
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Озвучка, игры и домен
+        run: |
+          cp -r audio web/out/audio
+          cp -r games web/out/games
+          echo "tatartel.ru" > web/out/CNAME
+          touch web/out/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: web/out }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
