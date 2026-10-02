@@ -1,0 +1,22 @@
+# Разовая распаковка исходников сайта из web-bundle.b64 в отдельные файлы папки web/
+name: unpack
+on:
+  push:
+    branches: [main]
+    paths: ["web-bundle.b64"]
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p web
+          base64 -d web-bundle.b64 | tar xz -C web
+          git rm -q web-bundle.b64
+          git config user.name "site-bot"
+          git config user.email "site-bot@users.noreply.github.com"
+          git add web
+          git commit -m "Сайт: исходники Next.js в папке web/"
+          git push
