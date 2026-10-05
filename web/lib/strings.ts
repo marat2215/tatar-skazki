@@ -1,5 +1,5 @@
 // Тексты интерфейса: основной — татарский, подстрочник — русский или английский.
-export type Line = { tt: string; ru: string; en: string };
+export type Line = { tt: string; ru: string; en: string; tr?: string; fi?: string };
 
 export const S = {
   navLearn: { tt: "Өйрәнү", ru: "Обучение", en: "Learn" },
@@ -80,6 +80,78 @@ export const S = {
   allTopics: { tt: "Барысы", ru: "Все", en: "All" },
   correct: { tt: "Дөрес!", ru: "Верно!", en: "Correct!" },
   wrong: { tt: "Ялгыш", ru: "Ошибка", en: "Wrong" },
+  navPlay: { tt: "Уеннар", ru: "Игры", en: "Games" },
+  ctaPlay: { tt: "Уйнап өйрәнү", ru: "Учить играя", en: "Learn by playing" },
+  gameTitle: { tt: "Уйнап өйрәник!", ru: "Учим играя!", en: "Learn by playing!" },
+  gameLead: { tt: "Очколар җыегыз, дәрәҗә күтәрегез, рекордлар куегыз.", ru: "Набирайте очки, повышайте уровень, ставьте рекорды.", en: "Earn points, level up, set records." },
+  level: { tt: "Дәрәҗә", ru: "Уровень", en: "Level" },
+  xp: { tt: "Очко", ru: "Очки", en: "XP" },
+  best: { tt: "Рекорд", ru: "Рекорд", en: "Best" },
+  lives: { tt: "Тормыш", ru: "Жизни", en: "Lives" },
+  combo: { tt: "Рәттән", ru: "Комбо", en: "Combo" },
+  gameMatch: { tt: "Парын тап", ru: "Найди пару", en: "Find the pair" },
+  gameMatchD: { tt: "Сүзне тәрҗемәсе белән тоташтырыгыз", ru: "Соедините слово с переводом на время", en: "Match words with translations against the clock" },
+  gameSpeed: { tt: "Тиз җавап", ru: "Быстрый ответ", en: "Speed round" },
+  gameSpeedD: { tt: "Өч тормыш, һәр сорауга 8 секунд", ru: "Три жизни и 8 секунд на каждый вопрос", en: "Three lives, 8 seconds per question" },
+  gameEar: { tt: "Колак сынавы", ru: "Испытание на слух", en: "Ear challenge" },
+  gameEarD: { tt: "Тыңлагыз һәм дөрес сүзне сайлагыз", ru: "Послушайте и выберите верное слово", en: "Listen and pick the right word" },
+  gameMore: { tt: "Тагын уеннар", ru: "Ещё игры", en: "More games" },
+  gameOver: { tt: "Уен тәмам!", ru: "Игра окончена!", en: "Game over!" },
+  newRecord: { tt: "Яңа рекорд!", ru: "Новый рекорд!", en: "New record!" },
+  playAgain: { tt: "Тагын уйнау", ru: "Сыграть ещё", en: "Play again" },
+  back: { tt: "Уеннарга", ru: "К играм", en: "To games" },
+  time: { tt: "Вакыт", ru: "Время", en: "Time" },
+  pairsLeft: { tt: "пар калды", ru: "пар осталось", en: "pairs left" },
 } satisfies Record<string, Line>;
 
 export type Key = keyof typeof S;
+
+// Турецкий и финский интерфейс
+const TRFI: Partial<Record<Key, [string, string]>> = {
+  navLearn: ["Öğren", "Opi"], navProgress: ["İlerleme", "Edistyminen"], navSections: ["Bölümler", "Osiot"],
+  heroTitle: ["Tatarcayı birlikte öğrenelim", "Opitaan tataria yhdessä"],
+  heroLead: ["Günde beş dakika: sesli kelimeler, ifadeler ve diyaloglar.", "Viisi minuuttia päivässä: sanoja, fraaseja ja dialogeja äänen kanssa."],
+  ctaStart: ["Öğrenmeye başla", "Aloita oppiminen"], ctaBot: ["Telegram botu", "Telegram-botti"],
+  counter: ["kelime öğrenildi", "sanaa opittu"], counterHint: ["ilerlemen bu cihazda", "edistymisesi tällä laitteella"],
+  howTitle: ["Nasıl çalışır", "Miten se toimii"],
+  step1: ["Kelimeler", "Sanat"], step1d: ["En gerekli kelimeleri dinleyerek ezberle", "Opettele tärkeimmät sanat kuuntelemalla"],
+  step2: ["İfadeler", "Fraasit"], step2d: ["Kelimelerden günlük cümleler kur", "Rakenna sanoista arjen lauseita"],
+  step3: ["Diyaloglar", "Dialogit"], step3d: ["Markette, evde, sokakta konuş", "Puhu kaupassa, kotona, kadulla"],
+  demoTitle: ["İlk ders", "Ensimmäinen oppitunti"], demoLead: ["Kartı çevir, dinle ve tekrarla", "Käännä kortti, kuuntele ja toista"],
+  flip: ["Çevir", "Käännä"], listen: ["Dinle", "Kuuntele"], speak: ["Telaffuzu kontrol et", "Tarkista ääntäminen"],
+  listening: ["Dinliyorum…", "Kuuntelen…"], pronGood: ["Harika!", "Hienoa!"], pronTry: ["Bir daha dene", "Yritä uudelleen"],
+  pronSelf: ["Doğru söyledim", "Sanoin oikein"],
+  pronUnsupported: ["Tarayıcı konuşmayı tanımıyor — kendini değerlendir", "Selain ei tunnista puhetta — arvioi itse"],
+  next: ["İleri", "Seuraava"], prev: ["Geri", "Takaisin"], know: ["Biliyorum", "Osaan"],
+  done: ["Ders bitti! Aferin!", "Oppitunti valmis! Hienoa!"], again: ["Tekrarla", "Toista"],
+  dashTitle: ["İlerlemen", "Edistymisesi"], streak: ["gün üst üste", "päivää putkeen"],
+  learned: ["öğrenilen kelime", "opittua sanaa"], lessons: ["tamamlanan ders", "oppituntia"],
+  activity: ["Son 14 gün", "Viimeiset 14 päivää"], sectionsTitle: ["Bölümler", "Osiot"],
+  alphabet: ["Alfabe", "Aakkoset"], alphabetD: ["39 harf ve Tatar sesleri", "39 kirjainta ja tatarin äänteet"],
+  grammar: ["Dilbilgisi", "Kielioppi"], grammarD: ["Ünlü uyumu, ekler, haller", "Vokaalisointu, päätteet, sijamuodot"],
+  phrasebook: ["Konuşma kılavuzu", "Fraasisanakirja"], phrasebookD: ["Günlük konuşma için ifadeler", "Fraaseja arkipuheeseen"],
+  listeningS: ["Dinleme", "Kuuntelu"], listeningD: ["Dinle ve doğru cevabı seç", "Kuuntele ja valitse oikea vastaus"],
+  open: ["Aç", "Avaa"], home: ["Ana sayfa", "Etusivu"],
+  footerAbout: ["Tatar dilini korumak ve geliştirmek için ücretsiz bir proje.", "Ilmainen projekti tatarin kielen säilyttämiseksi ja kehittämiseksi."],
+  footerContact: ["İletişim", "Yhteystiedot"], footerLang: ["Dil", "Kieli"], footerScript: ["Yazı", "Kirjoitus"],
+  theme: ["Renk teması", "Väriteema"], search: ["Ara…", "Hae…"], question: ["Ne duydun?", "Mitä kuulit?"],
+  score: ["Sonuç", "Tulos"], play: ["Dinle", "Toista"], start: ["Başla", "Aloita"], example: ["Örnek", "Esimerkki"],
+  alphabetLead: ["Tatar alfabesinde 39 harf var. Altısı Tatarcaya özgü sesleri gösterir.", "Tatarin aakkosissa on 39 kirjainta. Kuusi niistä merkitsee vain tatarille ominaisia äänteitä."],
+  grammarLead: ["En gerekli kurallar — kısaca ve örneklerle.", "Tärkeimmät säännöt — lyhyesti ja esimerkein."],
+  phrasebookLead: ["Bir ifadeye dokun — dinle ve tekrarla.", "Napauta fraasia — kuuntele ja toista."],
+  listeningLead: ["Kelimeyi dinle ve duyduğunu seç.", "Kuuntele sana ja valitse, mitä kuulit."],
+  special: ["Tatarcaya özgü ses", "Tatarille ominainen äänne"], allTopics: ["Hepsi", "Kaikki"],
+  correct: ["Doğru!", "Oikein!"], wrong: ["Yanlış", "Väärin"],
+  navPlay: ["Oyunlar", "Pelit"], ctaPlay: ["Oynayarak öğren", "Opi pelaamalla"],
+  gameTitle: ["Oynayarak öğrenelim!", "Opitaan pelaamalla!"], gameLead: ["Puan topla, seviye atla, rekor kır.", "Kerää pisteitä, nouse tasoja, tee ennätyksiä."],
+  level: ["Seviye", "Taso"], xp: ["Puan", "Pisteet"], best: ["Rekor", "Ennätys"], lives: ["Can", "Elämät"], combo: ["Kombo", "Kombo"],
+  gameMatch: ["Eşini bul", "Etsi pari"], gameMatchD: ["Kelimeleri çevirileriyle zamana karşı eşleştir", "Yhdistä sanat käännöksiin aikaa vastaan"],
+  gameSpeed: ["Hızlı cevap", "Pikakierros"], gameSpeedD: ["Üç can, her soruya 8 saniye", "Kolme elämää, 8 sekuntia kysymykseen"],
+  gameEar: ["Kulak testi", "Korvatesti"], gameEarD: ["Dinle ve doğru kelimeyi seç", "Kuuntele ja valitse oikea sana"],
+  gameMore: ["Daha fazla oyun", "Lisää pelejä"], gameOver: ["Oyun bitti!", "Peli päättyi!"], newRecord: ["Yeni rekor!", "Uusi ennätys!"],
+  playAgain: ["Tekrar oyna", "Pelaa uudelleen"], back: ["Oyunlara", "Peleihin"], time: ["Süre", "Aika"], pairsLeft: ["çift kaldı", "paria jäljellä"],
+};
+for (const [k, v] of Object.entries(TRFI) as [Key, [string, string]][]) {
+  (S[k] as Line).tr = v[0];
+  (S[k] as Line).fi = v[1];
+}

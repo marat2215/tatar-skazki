@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Send } from "lucide-react";
+import { ArrowRight, Gamepad2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Bi, TT } from "@/components/bi";
 import { WordCounter } from "@/components/word-counter";
@@ -29,6 +29,12 @@ export function Hero() {
             <Link href="/#learn">
               <TT line={S.ctaStart} />
               <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="accent">
+            <Link href="/play/">
+              <Gamepad2 aria-hidden />
+              <TT line={S.ctaPlay} />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">

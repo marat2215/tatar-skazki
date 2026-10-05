@@ -4,7 +4,15 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { S, type Key, type Line } from "./strings";
 import { toLatin } from "./translit";
 
-export type Locale = "tt" | "ru" | "en";
+export type Locale = "tt" | "ru" | "en" | "tr" | "fi";
+export const LOCALES: { id: Locale; label: string; flag: string }[] = [
+  { id: "tt", label: "Татарча", flag: "🟢" },
+  { id: "ru", label: "Русский", flag: "🇷🇺" },
+  { id: "en", label: "English", flag: "🇬🇧" },
+  { id: "tr", label: "Türkçe", flag: "🇹🇷" },
+  { id: "fi", label: "Suomi", flag: "🇫🇮" },
+];
+type Tr = { ru: string; en: string; tr?: string; fi?: string };
 export type Script = "cyr" | "lat";
 
 type Ctx = {
@@ -15,7 +23,9 @@ type Ctx = {
   /** Татарский текст в выбранной письменности */
   tt: (s: string) => string;
   /** Подстрочник (ru/en), null — если выбран только татарский */
-  sub: (l: { ru: string; en: string }) => string | null;
+  sub: (l: Tr) => string | null;
+  /** Перевод на выбранный язык (для татарского — русский) */
+  pick: (l: Tr) => string;
   line: (k: Key) => Line;
 };
 
@@ -29,8 +39,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     try {
       const l = localStorage.getItem("tt.locale") as Locale | null;
       const s = localStorage.getItem("tt.script") as Script | null;
-      if (l === "tt" || l === "ru" || l === "en") setLocaleState(l);
-      else if (navigator.language && !navigator.language.startsWith("ru")) setLocaleState("en");
+      const nav = (navigator.language || "ru").slice(0, 2);
+      if (l && LOCALES.some((x) => x.id === l)) setLocaleState(l);
+      else if (LOCALES.some((x) => x.id === nav)) setLocaleState(nav as Locale);
+      else if (nav !== "ru") setLocaleState("en");
       if (s === "cyr" || s === "lat") setScriptState(s);
     } catch {
       /* приватный режим — оставляем значения по умолчанию */
@@ -38,7 +50,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    document.documentElement.lang = locale === "en" ? "en" : locale === "tt" ? "tt" : "ru";
+    document.documentElement.lang = locale;
   }, [locale]);
 
   const setLocale = useCallback((l: Locale) => {
@@ -51,11 +63,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const tt = useCallback((s: string) => (script === "lat" ? toLatin(s) : s), [script]);
-  const sub = useCallback((l: { ru: string; en: string }) => (locale === "tt" ? null : l[locale]), [locale]);
+  const pick = useCallback((l: Tr) => (locale === "tt" ? l.ru : l[locale] ?? l.en), [locale]);
+  const sub = useCallback((l: Tr) => (locale === "tt" ? null : pick(l)), [locale, pick]);
   const line = useCallback((k: Key) => S[k], []);
 
   return (
-    <I18n.Provider value={{ locale, script, setLocale, setScript, tt, sub, line }}>{children}</I18n.Provider>
+    <I18n.Provider value={{ locale, script, setLocale, setScript, tt, sub, pick, line }}>{children}</I18n.Provider>
   );
 }
 

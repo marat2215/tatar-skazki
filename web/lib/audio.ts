@@ -1,19 +1,29 @@
-// Озвучка TatarTTS: файлы audio/site/<sha1[:12]>.mp3 собирает scripts/build_site.py
-const cache = new Map<string, string>();
+// Озвучка TatarTTS: файлы audio/site/<sha1[:12]>.mp3 собирает scripts/build_site.py.
+// Если файла нет — запасной вариант: синтез речи браузера (турецкий/башкирский голос ближе всего).
+import { sha1 } from "./sha1";
+
 let current: HTMLAudioElement | null = null;
 
-async function hash(text: string): Promise<string> {
-  const hit = cache.get(text);
-  if (hit) return hit;
-  const buf = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(text.trim()));
-  const h = Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
-  cache.set(text, h);
-  return h;
+function fallback(text: string) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const voices = synth.getVoices();
+  const v = ["tt", "ba", "kk", "tr", "ru"].map((l) => voices.find((x) => x.lang.toLowerCase().startsWith(l))).find(Boolean);
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "tr-TR";
+  u.rate = 0.85;
+  synth.speak(u);
 }
 
 export async function speak(text: string): Promise<void> {
-  const name = await hash(text);
+  const name = sha1(text.trim()).slice(0, 12);
   current?.pause();
-  current = new Audio(`/audio/site/${name}.mp3`);
-  await current.play().catch(() => undefined);
+  const a = new Audio(`/audio/site/${name}.mp3`);
+  current = a;
+  try {
+    await a.play();
+  } catch {
+    fallback(text);
+  }
 }

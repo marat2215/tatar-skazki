@@ -4,15 +4,10 @@ import Link from "next/link";
 import { Languages, Send } from "lucide-react";
 import { Bi, TT } from "@/components/bi";
 import { ScriptToggle } from "@/components/script-toggle";
-import { useI18n, type Locale } from "@/lib/i18n";
+import { LOCALES, useI18n } from "@/lib/i18n";
 import { S } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 
-const LOCALES: { id: Locale; label: string }[] = [
-  { id: "tt", label: "Татарча" },
-  { id: "ru", label: "Русский" },
-  { id: "en", label: "English" },
-];
 
 export function SiteFooter() {
   const { locale, setLocale } = useI18n();
@@ -36,6 +31,7 @@ export function SiteFooter() {
             ["/grammar/", S.grammar],
             ["/phrasebook/", S.phrasebook],
             ["/listening/", S.listeningS],
+            ["/play/", S.navPlay],
           ].map(([href, line]) => (
             <Link key={href as string} href={href as string} className="w-fit rounded-btn text-muted-foreground hover:text-foreground">
               <TT line={line as typeof S.alphabet} />

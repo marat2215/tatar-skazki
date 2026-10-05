@@ -29,7 +29,7 @@ const makeQuiz = (): Q[] =>
   shuffle(words).slice(0, ROUNDS).map((w) => ({ word: w, options: shuffle([w, ...shuffle(words.filter((x) => x.tt !== w.tt)).slice(0, 3)]) }));
 
 export function ListeningQuiz() {
-  const { tt, locale } = useI18n();
+  const { tt, pick: trl } = useI18n();
   const [quiz, setQuiz] = useState<Q[] | null>(null);
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -117,7 +117,7 @@ export function ListeningQuiz() {
                           )}
                         >
                           <span lang="tt">{tt(o.tt)}</span>
-                          {right && <span className="inline-flex items-center gap-1 font-sans text-sm text-success"><Check className="size-4" aria-hidden />{locale === "en" ? o.en : o.ru}</span>}
+                          {right && <span className="inline-flex items-center gap-1 font-sans text-sm text-success"><Check className="size-4" aria-hidden />{trl(o)}</span>}
                           {wrong && <X className="size-4 text-danger" aria-label={S.wrong.ru} />}
                         </button>
                       </li>

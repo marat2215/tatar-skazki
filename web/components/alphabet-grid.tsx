@@ -16,7 +16,7 @@ const exampleFor = (l: Letter) => words.find((w) => w.tt.toLowerCase().startsWit
 
 export function AlphabetGrid() {
   const [active, setActive] = useState<Letter>(ALPHABET[1]);
-  const { tt, sub, locale } = useI18n();
+  const { tt, sub, pick } = useI18n();
   const ex = exampleFor(active);
 
   return (
@@ -54,7 +54,7 @@ export function AlphabetGrid() {
                   <span className="mb-1 inline-flex items-center gap-1.5 font-semibold">
                     <Sparkles className="size-4" aria-hidden /> <Bi line={S.special} className="inline" />
                   </span>
-                  <p className="text-muted-foreground">{locale === "en" ? active.special.en : active.special.ru}</p>
+                  <p className="text-muted-foreground">{pick(active.special)}</p>
                 </div>
               )}
               {ex && (
@@ -63,7 +63,7 @@ export function AlphabetGrid() {
                   <div>
                     <div className="text-xs text-muted-foreground">{tt(S.example.tt)}{sub(S.example) ? ` · ${sub(S.example)}` : ""}</div>
                     <div lang="tt" className="font-tt text-lg font-semibold">{tt(ex.tt)}</div>
-                    <div className="text-sm text-muted-foreground">{locale === "en" ? ex.en : ex.ru}</div>
+                    <div className="text-sm text-muted-foreground">{pick(ex)}</div>
                   </div>
                 </div>
               )}

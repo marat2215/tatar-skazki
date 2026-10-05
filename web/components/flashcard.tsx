@@ -11,8 +11,8 @@ type Props = { word: Word; flipped: boolean; onFlip: () => void };
 
 /** Флешкарта: лицевая сторона — татарское слово, оборот — перевод */
 export function Flashcard({ word, flipped, onFlip }: Props) {
-  const { tt, script, locale } = useI18n();
-  const translation = locale === "en" ? word.en : word.ru;
+  const { tt, script, pick } = useI18n();
+  const translation = pick(word);
   return (
     <div className="perspective h-64 w-full sm:h-72">
       <motion.button

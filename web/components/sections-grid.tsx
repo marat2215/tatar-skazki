@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight, BookA, Headphones, MessageCircle, Puzzle, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, BookA, Gamepad2, Headphones, MessageCircle, Puzzle, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Bi } from "@/components/bi";
 import { Section } from "@/components/section";
 import { S, type Line } from "@/lib/strings";
 
 const ITEMS: { href: string; icon: LucideIcon; title: Line; text: Line }[] = [
+  { href: "/play/", icon: Gamepad2, title: S.navPlay, text: S.gameLead },
   { href: "/alphabet/", icon: BookA, title: S.alphabet, text: S.alphabetD },
   { href: "/grammar/", icon: Puzzle, title: S.grammar, text: S.grammarD },
   { href: "/phrasebook/", icon: MessageCircle, title: S.phrasebook, text: S.phrasebookD },
@@ -21,7 +22,7 @@ export function SectionsGrid() {
       <h2 id="sections-title" className="mb-8 text-3xl">
         <Bi line={S.sectionsTitle} />
       </h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {ITEMS.map((it) => (
           <motion.div key={it.href} whileHover={{ y: -2 }} transition={{ duration: 0.15, ease: "easeOut" }}>
             <Link href={it.href} className="group block h-full rounded-card">

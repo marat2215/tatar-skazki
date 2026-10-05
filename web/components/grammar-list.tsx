@@ -7,7 +7,7 @@ import { RULES } from "@/lib/grammar";
 import { useI18n } from "@/lib/i18n";
 
 export function GrammarList() {
-  const { tt, locale } = useI18n();
+  const { tt, pick } = useI18n();
   return (
     <div className="mx-auto grid w-full max-w-content gap-4 px-4 py-10 sm:px-6 md:grid-cols-2 lg:px-8">
       {RULES.map((r, i) => (
@@ -21,12 +21,12 @@ export function GrammarList() {
           <Card className="h-full p-6">
             <span className="text-xs font-semibold text-muted-foreground">0{i + 1}</span>
             <Bi line={r.title} as="h2" className="mt-1 text-xl" subClassName="text-sm" />
-            <p className="mt-3 text-muted-foreground">{locale === "en" ? r.text.en : r.text.ru}</p>
+            <p className="mt-3 text-muted-foreground">{pick(r.text)}</p>
             <ul className="mt-4 flex flex-col gap-2 border-t pt-4">
               {r.examples.map(([t, ru, en]) => (
                 <li key={t} className="flex flex-wrap items-baseline justify-between gap-x-4">
                   <span lang="tt" className="font-tt font-semibold">{tt(t)}</span>
-                  <span className="text-sm text-muted-foreground">{locale === "en" ? en : ru}</span>
+                  <span className="text-sm text-muted-foreground">{pick({ ru, en })}</span>
                 </li>
               ))}
             </ul>

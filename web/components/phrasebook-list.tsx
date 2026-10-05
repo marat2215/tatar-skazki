@@ -11,7 +11,7 @@ import { S } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 
 export function PhrasebookList() {
-  const { tt, sub, locale } = useI18n();
+  const { tt, sub, pick } = useI18n();
   const [q, setQ] = useState("");
   const [topic, setTopic] = useState<number | null>(null);
 
@@ -28,7 +28,7 @@ export function PhrasebookList() {
       .filter((g) => (topic === null || g.i === topic) && g.items.length);
   }, [q, topic]);
 
-  const tr = (o: { ru: string; en: string }) => (locale === "en" ? o.en : o.ru);
+  const tr = (o: { ru: string; en: string }) => (pick(o));
 
   return (
     <div className="mx-auto w-full max-w-content px-4 py-10 sm:px-6 lg:px-8">
