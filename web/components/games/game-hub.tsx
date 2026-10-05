@@ -10,6 +10,8 @@ import { Bi, TT } from "@/components/bi";
 import { MatchGame } from "@/components/games/match-game";
 import { QuizGame } from "@/components/games/quiz-game";
 import { levelOf, useGame, type Mode } from "@/lib/game";
+import { UI as TOWER } from "@/lib/tower-data";
+import { useI18n } from "@/lib/i18n";
 import { S, type Line } from "@/lib/strings";
 
 const MODES: { id: Mode; icon: LucideIcon; title: Line; text: Line }[] = [
@@ -26,6 +28,7 @@ const CLASSIC = [
 
 export function GameHub() {
   const g = useGame();
+  const { pick } = useI18n();
   const [mode, setMode] = useState<Mode | null>(null);
   const lv = levelOf(g?.xp ?? 0);
 
@@ -48,6 +51,17 @@ export function GameHub() {
         </Card>
       ) : (
         <>
+          <a href="/tower/" className="group mb-6 block">
+            <Card className="relative flex items-center gap-5 overflow-hidden border-accent/60 bg-gradient-to-br from-primary/15 to-accent/15 p-6 transition-shadow group-hover:shadow-lift">
+              <span className="text-6xl" aria-hidden>🕌</span>
+              <div className="flex-1">
+                <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-accent-foreground">NEW</span>
+                <h3 className="mt-2 font-tt text-2xl font-semibold">Сөембикә манарасы</h3>
+                <p className="font-semibold">{pick(TOWER.title)}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{pick(TOWER.lead)}</p>
+              </div>
+            </Card>
+          </a>
           <div className="grid gap-4 sm:grid-cols-3">
             {MODES.map((m) => (
               <motion.button key={m.id} type="button" whileHover={{ y: -3 }} whileTap={{ scale: 0.97 }} onClick={() => setMode(m.id)} className="text-left">
