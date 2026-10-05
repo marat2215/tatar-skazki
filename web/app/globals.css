@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 23% 97%;      /* #FAFAF7 */
+    --foreground: 0 0% 10%;        /* #1A1A1A */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --primary: 152 69% 19%;        /* #0F5132 */
+    --primary-foreground: 60 23% 97%;
+    --accent: 45 81% 46%;          /* #D4A017 */
+    --accent-foreground: 0 0% 10%;
+    --muted: 60 9% 93%;
+    --muted-foreground: 0 0% 36%;
+    --border: 60 7% 88%;
+    --input: 60 7% 88%;
+    --ring: 152 69% 19%;
+    --success: 152 69% 28%;
+    --danger: 0 65% 45%;
+  }
+  .dark {
+    --background: 150 12% 7%;
+    --foreground: 60 10% 94%;
+    --card: 150 10% 10%;
+    --card-foreground: 60 10% 94%;
+    --primary: 152 48% 48%;
+    --primary-foreground: 150 30% 6%;
+    --accent: 45 81% 52%;
+    --accent-foreground: 0 0% 8%;
+    --muted: 150 8% 16%;
+    --muted-foreground: 60 5% 68%;
+    --border: 150 8% 18%;
+    --input: 150 8% 20%;
+    --ring: 152 48% 48%;
+    --success: 152 48% 48%;
+    --danger: 0 70% 62%;
+  }
+  * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-background text-foreground font-sans antialiased leading-body; }
+  h1, h2, h3, h4 { @apply font-semibold tracking-tight; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+}
+
+@layer utilities {
+  .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .rotate-y-180 { transform: rotateY(180deg); }
+  .perspective { perspective: 1200px; }
+}
