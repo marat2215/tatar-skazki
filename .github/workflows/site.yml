@@ -46,32 +46,3 @@ jobs:
           git config user.email "site-bot@users.noreply.github.com"
           git add site/data.json audio/site
           git diff --cached --quiet || (git commit -m "Сайт: обновлена база и озвучка" && git push)
-# Собирает учебную базу сайта и озвучку (TatarTTS) при изменении контента.
-name: site
-on:
-  push:
-    branches: [main]
-    paths: ["content/**", "phrases/**", "stories/**", "games/*.html", "scripts/build_site.py"]
-  workflow_dispatch:
-permissions:
-  contents: write
-concurrency: site
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - run: pip install piper-tts numpy gdown
-      - uses: actions/cache@v4
-        with: { path: models, key: tatartts-female-v1 }
-      - run: python scripts/get_model.py
-      - run: python scripts/build_site.py --audio
-      - name: commit
-        run: |
-          git config user.name "site-bot"
-          git config user.email "site-bot@users.noreply.github.com"
-          git add site/data.json audio/site
-          git diff --cached --quiet || (git commit -m "Сайт: обновлена база и озвучка" && git push)
