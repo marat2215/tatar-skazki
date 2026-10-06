@@ -4,43 +4,46 @@
 
 @layer base {
   :root {
-    --background: 60 23% 97%;      /* #FAFAF7 */
-    --foreground: 0 0% 10%;        /* #1A1A1A */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --primary: 152 69% 19%;        /* #0F5132 */
-    --primary-foreground: 60 23% 97%;
-    --accent: 45 81% 46%;          /* #D4A017 */
-    --accent-foreground: 0 0% 10%;
-    --muted: 60 9% 93%;
-    --muted-foreground: 0 0% 36%;
-    --border: 60 7% 88%;
-    --input: 60 7% 88%;
-    --ring: 152 69% 19%;
-    --success: 152 69% 28%;
-    --danger: 0 65% 45%;
+    /* Тёплая палитра «чаепитие у әби» */
+    --background: 37 72% 94%;      /* #FBF3E6 топлёное молоко */
+    --foreground: 22 29% 18%;      /* #3A2A20 крепкий чай */
+    --card: 36 100% 98%;
+    --card-foreground: 22 29% 18%;
+    --primary: 10 56% 51%;         /* #C8553D терракота */
+    --primary-foreground: 36 100% 98%;
+    --accent: 38 72% 55%;          /* #E0A43A золото */
+    --accent-foreground: 22 29% 18%;
+    --muted: 35 50% 89%;
+    --muted-foreground: 25 18% 42%;
+    --border: 35 45% 84%;
+    --input: 35 45% 84%;
+    --ring: 10 56% 51%;
+    --success: 158 61% 30%;        /* #1E7A5A изумруд */
+    --danger: 4 70% 50%;
+    --night: 213 51% 25%;          /* #1F3A5F ночная Казань */
   }
   .dark {
-    --background: 150 12% 7%;
-    --foreground: 60 10% 94%;
-    --card: 150 10% 10%;
-    --card-foreground: 60 10% 94%;
-    --primary: 152 48% 48%;
-    --primary-foreground: 150 30% 6%;
-    --accent: 45 81% 52%;
-    --accent-foreground: 0 0% 8%;
-    --muted: 150 8% 16%;
-    --muted-foreground: 60 5% 68%;
-    --border: 150 8% 18%;
-    --input: 150 8% 20%;
-    --ring: 152 48% 48%;
-    --success: 152 48% 48%;
-    --danger: 0 70% 62%;
+    --background: 216 45% 15%;     /* вечер над Кабаном */
+    --foreground: 35 55% 91%;
+    --card: 216 40% 20%;
+    --card-foreground: 35 55% 91%;
+    --primary: 12 70% 60%;
+    --primary-foreground: 216 45% 12%;
+    --accent: 38 80% 60%;
+    --accent-foreground: 216 45% 12%;
+    --muted: 216 32% 25%;
+    --muted-foreground: 35 20% 72%;
+    --border: 216 30% 28%;
+    --input: 216 30% 28%;
+    --ring: 12 70% 60%;
+    --success: 158 50% 48%;
+    --danger: 4 75% 62%;
+    --night: 35 55% 91%;
   }
   * { @apply border-border; }
   html { -webkit-text-size-adjust: 100%; }
   body { @apply bg-background text-foreground font-sans antialiased leading-body; }
-  h1, h2, h3, h4 { @apply font-semibold tracking-tight; }
+  h1, h2, h3, h4 { @apply font-display font-bold tracking-tight; color: hsl(var(--night)); }
   :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
 }
 
@@ -50,3 +53,27 @@
   .rotate-y-180 { transform: rotateY(180deg); }
   .perspective { perspective: 1200px; }
 }
+
+/* «Дышащий» фон с орнаментом тюльпанов */
+.warm-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 0% 0%, hsl(var(--primary) / 0.18), transparent 60%),
+    radial-gradient(100% 70% at 100% 10%, hsl(var(--accent) / 0.22), transparent 60%),
+    hsl(var(--background));
+  animation: breathe 14s ease-in-out infinite alternate; }
+.warm-bg::after { content: ""; position: absolute; inset: 0; opacity: .06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23C8553D'%3E%3Cpath d='M40 14c7 8 11 15 11 22s-5 12-11 12-11-5-11-12 4-14 11-22z'/%3E%3Cpath d='M40 48c-10-1-18 3-21 10 8 2 15-1 21-10zm0 0c10-1 18 3 21 10-8 2-15-1-21-10z' opacity='.6'/%3E%3Cpath d='M0 0l6 6-6 6-6-6zM80 80l6 6-6 6-6-6zM80 0l6 6-6 6-6-6zM0 80l6 6-6 6-6-6z'/%3E%3C/g%3E%3C/svg%3E"); }
+@keyframes breathe { to { filter: hue-rotate(-8deg) saturate(1.1); } }
+.ribbon { height: 8px; opacity: .45; background: repeating-linear-gradient(45deg, hsl(var(--accent)) 0 6px, transparent 6px 12px); }
+.btn-3d { box-shadow: 0 5px 0 hsl(var(--primary) / 0.65), 0 14px 30px -12px hsl(var(--primary) / 0.7); }
+.btn-3d:active { transform: translateY(3px); box-shadow: 0 2px 0 hsl(var(--primary) / 0.65); }
+.bayem .paw { transform-origin: 118px 96px; animation: wave 1.6s ease-in-out 3; }
+.bayem .tail { transform-origin: 40px 130px; animation: tail 3s ease-in-out infinite; }
+.bayem .eye { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+@keyframes wave { 50% { transform: rotate(-25deg); } }
+@keyframes tail { 50% { transform: rotate(12deg); } }
+@keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(.1); } }
+.conf { position: fixed; top: -20px; font-size: 22px; pointer-events: none; z-index: 60; animation: fall 1.6s ease-in forwards; }
+@keyframes fall { to { transform: translateY(105vh) rotate(540deg); opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
+@keyframes softpulse { 50% { transform: scale(1.04); } }

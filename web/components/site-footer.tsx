@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export function SiteFooter() {
   const { locale, setLocale } = useI18n();
   return (
-    <footer className="mt-16 border-t bg-card">
+    <footer className="mt-16 border-t bg-card/80 pb-20 md:pb-0">
       <div className="mx-auto grid w-full max-w-content gap-8 px-4 py-12 sm:px-6 md:grid-cols-3 lg:px-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 font-semibold">
