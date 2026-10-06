@@ -39,7 +39,7 @@ export function SayStep({ step, showT, onDone }: StepProps<"say">) {
   const name = pick(WHO[step.who]);
   return (
     <div className="flex flex-col gap-5">
-      {name && <span className="w-fit rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground dark:text-accent">{name}</span>}
+      {false && name && <span className="w-fit rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground dark:text-accent">{name}</span>}
       <Say tt={step.tt} t={step.t} showT={showT} big />
       <Button className="self-end" onClick={() => onDone()} autoFocus>{pick(UI.next)} →</Button>
     </div>
@@ -130,7 +130,7 @@ export function ChoiceStep({ step, showT, onDone, onMistake }: StepProps<"choice
   const name = pick(WHO[step.who]);
   return (
     <div className="flex flex-col gap-4">
-      {name && <span className="w-fit rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground dark:text-accent">{name}</span>}
+      {false && name && <span className="w-fit rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground dark:text-accent">{name}</span>}
       <Say tt={step.tt} t={step.t} showT={showT} big />
       <div className="grid gap-2">
         {step.opts.map((o) => (

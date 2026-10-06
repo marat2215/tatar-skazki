@@ -10,7 +10,10 @@ import { BuildStep, ChoiceStep, MatchStep, OddStep, OrderStep, SayStep, VocabSte
 import { markLearned, markLesson } from "@/lib/progress";
 import { speak } from "@/lib/audio";
 import { useI18n } from "@/lib/i18n";
-import { ENDINGS, SCENES, UI, type L, type Opt, type Step } from "@/lib/tower-data";
+import { ENDINGS, SCENES, UI, WHO, type L, type Opt, type Step, type Who } from "@/lib/tower-data";
+import dynamic from "next/dynamic";
+import { PORTRAIT } from "@/components/tower/art";
+const Tower3D = dynamic(() => import("@/components/tower/tower-3d").then((m) => m.Tower3D), { ssr: false, loading: () => <div className="absolute inset-0 bg-gradient-to-b from-[#3b2a6a] to-[#ffb27a]" /> });
 import { cn } from "@/lib/utils";
 
 type Save = { s: number; i: number; mistakes: number; diary: string[]; ending: 0 | 1 | 2 | 3; ei: number; showT: boolean };
@@ -34,12 +37,49 @@ function Ornament({ hue }: { hue: number }) {
   );
 }
 
-function TowerMeter({ floor }: { floor: number }) {
+function _TowerMeter({ floor }: { floor: number }) {
   return (
     <div className="flex flex-col-reverse gap-1" aria-label={`floor ${floor}`}>
       {Array.from({ length: 9 }, (_, k) => (
         <span key={k} className={cn("h-2 w-6 rounded-sm transition-colors", k < floor ? "bg-primary" : k === floor ? "bg-accent" : "bg-muted")} />
       ))}
+    </div>
+  );
+}
+
+
+const PHOTO = new Set<Who>(["dania", "cat", "ildar", "babi", "syuy"]);
+const NAME_COLOR: Partial<Record<Who, string>> = { dania: "#1d8f86", cat: "#e0782f", ildar: "#e0561c", babi: "#b0284c", syuy: "#0f8a5f", voice: "#c98a00" };
+
+function Art({ html, className }: { html: string; className?: string }) {
+  return <div className={className} aria-hidden dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+/** Сцена визуальной новеллы: фон этажа, герой(и), мини-башня прогресса */
+function Stage({ sceneId, who, floor, title, sub, children, overview }: { overview?: boolean; sceneId: string; who: Who[]; floor: number; title?: string; sub?: string; children?: React.ReactNode }) {
+  void sceneId;
+  const { pick } = useI18n();
+  return (
+    <div className="tw-stage relative w-full overflow-hidden rounded-[22px] border-4 border-[#2a1638] shadow-[0_14px_34px_rgba(42,22,56,.35)]" style={{ aspectRatio: "var(--tw-ar, 16 / 10)" }}>
+      <Tower3D floor={floor} overview={overview} className="absolute inset-0" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/35 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-end justify-between gap-2 px-1">
+        <AnimatePresence mode="popLayout">
+          {who.map((w, k) => PORTRAIT[w] && (
+            <motion.div key={w} initial={{ opacity: 0, y: 40, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30 }} transition={{ type: "spring", stiffness: 260, damping: 22 }}
+              className={cn("tw-bob w-[34%] max-w-[250px]", k > 0 && "w-[27%]")} style={{ animationDelay: `${k * -1.1}s` }}>
+              {PHOTO.has(w) ? <img src={`/tower/${w}.webp`} alt={pick(WHO[w])} className="h-auto w-full [filter:drop-shadow(0_14px_18px_rgba(0,0,0,.55))_drop-shadow(0_0_3px_rgba(255,236,190,.9))]" draggable={false} /> : <Art html={PORTRAIT[w]!()} className="[&>svg]:h-auto [&>svg]:w-full" />}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      {title && (
+        <div className="absolute left-3 top-3 max-w-[70%] rounded-2xl bg-[#2a1638]/70 px-3 py-1.5 text-white backdrop-blur-sm">
+          {sub && <p className="text-[11px] uppercase tracking-wider text-[#ffd34d]">{sub}</p>}
+          <p lang="tt" className="font-tt text-lg font-semibold leading-tight sm:text-xl">{title}</p>
+        </div>
+      )}
+      {children}
     </div>
   );
 }
@@ -87,24 +127,23 @@ export function TowerGame() {
 
   if (!started) {
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
-        <Card className="relative overflow-hidden p-8 text-center">
-          <Ornament hue={45} />
-          <div className="mx-auto mb-6 flex w-fit items-end gap-4">
-            <TowerMeter floor={save.ending ? 9 : scene.floor} />
-            <span className="text-7xl" aria-hidden>🕌</span>
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
+        <Stage overview sceneId="prologue" who={["dania", "cat"]} floor={6}>
+          <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-[#2a1638]/70 to-transparent px-5 pb-10 pt-4 text-center text-white">
+            <h1 lang="tt" className="font-tt text-3xl font-bold !text-white drop-shadow-[0_3px_0_#2a1638] sm:text-5xl">Сөембикә манарасы</h1>
+            <p className="mt-1 text-sm text-[#ffe7b8] sm:text-base">{pick(UI.title)}</p>
           </div>
-          <h2 className="font-tt text-3xl font-semibold">Сөембикә манарасы</h2>
-          <p className="mt-1 text-lg text-muted-foreground">{pick(UI.title)}</p>
-          <p className="mx-auto mt-4 max-w-md text-muted-foreground">{pick(UI.lead)}</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button size="lg" onClick={() => { setStarted(true); void speak("Исәнме, кызым."); }}>
-              <Play aria-hidden />{pick(fresh0 ? UI.start : UI.cont)}
-            </Button>
-            {!fresh0 && <Button size="lg" variant="outline" onClick={() => { setSave({ ...fresh, showT: save.showT }); setStarted(true); }}><RotateCcw aria-hidden />{pick(UI.restart)}</Button>}
+        </Stage>
+        <div className="-mt-6 relative z-10 mx-3 rounded-[20px] border-4 border-[#2a1638] bg-[#fff6e6] p-5 text-center text-[#2a1638] shadow-xl dark:bg-[#2a1638] dark:text-[#fff6e6] dark:border-[#ffd34d]">
+          <p className="mx-auto max-w-md">{pick(UI.lead)}</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <button type="button" className="tw-btn" onClick={() => { setStarted(true); void speak("Исәнме, кызым."); }}>
+              <Play aria-hidden className="size-5" />{pick(fresh0 ? UI.start : UI.cont)}
+            </button>
+            {!fresh0 && <button type="button" className="tw-btn tw-btn-alt" onClick={() => { setSave({ ...fresh, showT: save.showT }); setStarted(true); }}><RotateCcw aria-hidden className="size-5" />{pick(UI.restart)}</button>}
           </div>
-          {save.diary.length > 0 && <p className="mt-6 text-sm text-muted-foreground">📜 {save.diary.length} {pick(UI.words)}</p>}
-        </Card>
+          {save.diary.length > 0 && <p className="mt-4 text-sm opacity-75">📜 {save.diary.length} {pick(UI.words)}</p>}
+        </div>
       </div>
     );
   }
@@ -113,46 +152,47 @@ export function TowerGame() {
   const key = save.ending ? `e${save.ending}-${save.ei}` : `${save.s}-${save.i}`;
   const common = { showT: save.showT, onDone: advance, onMistake: mistake };
 
-  return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6">
-      <div className="mb-4 flex items-center gap-3">
-        <TowerMeter floor={save.ending ? 9 : scene.floor} />
-        <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {save.ending ? `${pick(UI.ending)} ${save.ending}` : scene.floor === 0 || scene.floor === 8 ? pick(scene.place) : `${pick(UI.floor)} ${scene.floor} · ${pick(scene.place)}`}
-          </p>
-          <h2 lang="tt" className="truncate font-tt text-2xl font-semibold">
-            «{tt(save.ending ? ENDINGS[save.ending].tt : scene.tt)}» <span className="font-sans text-base font-normal text-muted-foreground">{pick(save.ending ? ENDINGS[save.ending].t : scene.t)}</span>
-          </h2>
-        </div>
-        <Button variant="ghost" size="icon" aria-label={pick(UI.hint)} aria-pressed={save.showT} onClick={() => setSave({ ...save, showT: !save.showT })}>
-          {save.showT ? <Eye aria-hidden /> : <EyeOff aria-hidden />}
-        </Button>
-        <Button variant="outline" onClick={() => setDiaryOpen(true)}><BookOpen aria-hidden /><span className="tabular-nums">{save.diary.length}</span></Button>
-      </div>
+  const speaker: Who | null = step && (step.k === "say" || step.k === "choice") ? step.who : null;
+  const cast: Who[] = endingDone ? (save.ending === 3 ? ["dania", "syuy"] : ["dania"]) : speaker && speaker !== "narr" ? (speaker === "dania" ? ["dania"] : [speaker, "dania"]) : speaker === "narr" ? [] : ["dania", "cat"];
+  const nameColor = speaker ? NAME_COLOR[speaker] : undefined;
+  const sceneId = save.ending ? "top" : scene.id;
+  const floorLabel = save.ending ? `${pick(UI.ending)} ${save.ending}` : scene.floor === 0 || scene.floor === 8 ? pick(scene.place) : `${pick(UI.floor)} ${scene.floor} · ${pick(scene.place)}`;
 
-      <Card className="relative overflow-hidden p-5 sm:p-7" style={{ backgroundImage: `linear-gradient(160deg, hsl(${hue} 70% 50% / 0.10), transparent 55%)` }}>
-        <Ornament hue={hue} />
-        <AnimatePresence mode="wait">
-          <motion.div key={key} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.22 }} className="relative">
-            {endingDone ? (
-              <div className="flex flex-col items-center gap-4 py-6 text-center">
-                <span className="text-6xl" aria-hidden>{save.ending === 3 ? "💛" : save.ending === 2 ? "📖" : "🌙"}</span>
-                <h3 lang="tt" className="font-tt text-3xl font-semibold">«{tt(ENDINGS[save.ending].tt)}»</h3>
-                <p className="text-muted-foreground">{pick(UI.ending)} {save.ending} / 3 · {pick(UI.mistakes)}: {save.mistakes} · 📜 {save.diary.length}</p>
-                <Button onClick={() => setSave({ ...fresh, showT: save.showT })}><RotateCcw aria-hidden />{pick(UI.restart)}</Button>
-              </div>
-            ) : step?.k === "say" ? <SayStep step={step} {...common} />
-              : step?.k === "vocab" ? <VocabStep step={step} {...common} />
-              : step?.k === "build" ? <BuildStep step={step} {...common} />
-              : step?.k === "choice" ? <ChoiceStep step={step} {...common} />
-              : step?.k === "match" ? <MatchStep step={step} {...common} />
-              : step?.k === "order" ? <OrderStep step={step} {...common} />
-              : step?.k === "odd" ? <OddStep step={step} {...common} />
-              : null}
-          </motion.div>
-        </AnimatePresence>
-      </Card>
+  return (
+    <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
+      <Stage sceneId={sceneId} who={cast} floor={save.ending ? 8 : scene.floor} title={`«${tt(save.ending ? ENDINGS[save.ending].tt : scene.tt)}»`} sub={floorLabel} />
+      <div className="relative z-10 -mt-5 mx-1 sm:mx-3">
+        {speaker && speaker !== "narr" && (
+          <span className="absolute -top-4 left-5 z-10 rounded-full border-[3px] border-[#2a1638] px-4 py-1 text-sm font-bold text-white shadow" style={{ background: nameColor ?? "#2a1638" }}>{pick(WHO[speaker])}</span>
+        )}
+        <div className="absolute -top-4 right-4 z-10 flex gap-2">
+          <Button variant="outline" size="icon" className="rounded-full border-[3px] border-[#2a1638] bg-card" aria-label={pick(UI.hint)} aria-pressed={save.showT} onClick={() => setSave({ ...save, showT: !save.showT })}>
+            {save.showT ? <Eye aria-hidden /> : <EyeOff aria-hidden />}
+          </Button>
+          <Button variant="outline" className="rounded-full border-[3px] border-[#2a1638] bg-card" onClick={() => setDiaryOpen(true)}><BookOpen aria-hidden /><span className="tabular-nums">{save.diary.length}</span></Button>
+        </div>
+        <Card className="tw-dialog relative overflow-hidden rounded-[20px] border-4 border-[#2a1638] p-5 pt-7 sm:p-7 sm:pt-8" style={{ backgroundImage: `linear-gradient(160deg, hsl(${hue} 80% 55% / 0.16), transparent 60%)` }}>
+          <Ornament hue={hue} />
+          <AnimatePresence mode="wait">
+            <motion.div key={key} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.22 }} className="relative">
+              {endingDone ? (
+                <div className="flex flex-col items-center gap-4 py-4 text-center">
+                  <h3 lang="tt" className="font-tt text-3xl font-semibold">«{tt(ENDINGS[save.ending].tt)}»</h3>
+                  <p className="text-muted-foreground">{pick(UI.ending)} {save.ending} / 3 · {pick(UI.mistakes)}: {save.mistakes} · 📜 {save.diary.length}</p>
+                  <button type="button" className="tw-btn" onClick={() => setSave({ ...fresh, showT: save.showT })}><RotateCcw aria-hidden className="size-5" />{pick(UI.restart)}</button>
+                </div>
+              ) : step?.k === "say" ? <SayStep step={step} {...common} />
+                : step?.k === "vocab" ? <VocabStep step={step} {...common} />
+                : step?.k === "build" ? <BuildStep step={step} {...common} />
+                : step?.k === "choice" ? <ChoiceStep step={step} {...common} />
+                : step?.k === "match" ? <MatchStep step={step} {...common} />
+                : step?.k === "order" ? <OrderStep step={step} {...common} />
+                : step?.k === "odd" ? <OddStep step={step} {...common} />
+                : null}
+            </motion.div>
+          </AnimatePresence>
+        </Card>
+      </div>
 
       <AnimatePresence>
         {diaryOpen && (

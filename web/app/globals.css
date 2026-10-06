@@ -77,3 +77,21 @@
 @keyframes fall { to { transform: translateY(105vh) rotate(540deg); opacity: .2; } }
 @media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
 @keyframes softpulse { 50% { transform: scale(1.04); } }
+
+/* Башня Сююмбике — визуальная новелла */
+.tw-bob{animation:twbob 3s ease-in-out infinite}
+@keyframes twbob{50%{transform:translateY(-6px)}}
+.tw-blink{animation:twblink 4.5s infinite}
+@keyframes twblink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.tw-halo{animation:twhalo 2.6s ease-in-out infinite}
+@keyframes twhalo{50%{opacity:.6}}
+.tw-float{animation:twbob 2.4s ease-in-out infinite}
+.tw-spark{animation:twspark 1.8s ease-in-out infinite}
+@keyframes twspark{50%{opacity:.15}}
+.tw-hand{animation:twspin 8s linear infinite}
+@keyframes twspin{to{transform:rotate(360deg)}}
+.tw-btn{display:inline-flex;align-items:center;gap:.5rem;font-weight:800;font-size:1.05rem;padding:.8rem 1.4rem;border-radius:16px;color:#3a1600;background:linear-gradient(180deg,#ffe07a,#ff9f1c);box-shadow:0 5px 0 #b45a00,0 10px 20px #ff9f1c44,inset 0 2px 0 #fff8;border:3px solid #2a1638;transition:transform .08s}
+.tw-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b45a00}
+.tw-btn-alt{background:linear-gradient(180deg,#8ff8cc,#19c27a);color:#03301c;box-shadow:0 5px 0 #0d7a4b}
+@media (prefers-reduced-motion:reduce){.tw-bob,.tw-blink,.tw-halo,.tw-float,.tw-spark,.tw-hand{animation:none}}
+@media (max-width:640px){.tw-stage{--tw-ar:4/5}}
