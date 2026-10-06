@@ -2,6 +2,7 @@
 // (тексты игр — из web/tts-extra.txt, шаг в site.yml). Робот браузера не используем —
 // он не умеет татарский и звучит плохо.
 import { sha1 } from "./sha1";
+import { bump } from "./daily";
 
 let current: HTMLAudioElement | null = null;
 
@@ -10,5 +11,5 @@ export async function speak(text: string): Promise<void> {
   current?.pause();
   const a = new Audio(`/audio/site/${name}.mp3`);
   current = a;
-  try { await a.play(); } catch { /* записи пока нет — молчим */ }
+  try { await a.play(); bump("listen"); } catch { /* записи пока нет — молчим */ }
 }

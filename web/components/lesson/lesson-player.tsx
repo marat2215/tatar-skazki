@@ -12,9 +12,10 @@ import { speak } from "@/lib/audio";
 import { words as ALL, type Phrase, type Word } from "@/lib/content";
 import { shuffle } from "@/lib/game";
 import { useI18n } from "@/lib/i18n";
-import { UNITS, completeUnit, unitPhrases, unitWords, type Unit } from "@/lib/path";
+import { STORIES, UNITS, completeUnit, unitPhrases, unitWords, type Unit } from "@/lib/path";
 import { markLearned, markLesson } from "@/lib/progress";
-import { boop, confetti, ding, fanfare } from "@/lib/sfx";
+import { boop, click, confetti, ding, fanfare, purr, swoosh } from "@/lib/sfx";
+import { bump } from "@/lib/daily";
 import { cn } from "@/lib/utils";
 
 type Step =
@@ -66,7 +67,7 @@ export function LessonPlayer() {
   }, []);
 
   const step = steps[i];
-  const next = () => { setI((n) => n + 1); setPicked(null); setFlipped(false); setBubble(null); };
+  const next = () => { click(); setI((n) => n + 1); setPicked(null); setFlipped(false); setBubble(null); };
 
   useEffect(() => {
     if (!step || !unit) return;
@@ -80,7 +81,7 @@ export function LessonPlayer() {
     if (picked) return;
     setPicked(key);
     if (ok) { ding(); if (w) markLearned(w); setBubble(PRAISE[Math.floor(Math.random() * PRAISE.length)]); if (Math.random() < 0.4) confetti(); }
-    else { boop(); setMistakes((m) => m + 1); setBubble(OOPS[Math.floor(Math.random() * OOPS.length)]); }
+    else { boop(); window.setTimeout(purr, 250); setMistakes((m) => m + 1); setBubble(OOPS[Math.floor(Math.random() * OOPS.length)]); }
   };
 
   const nextUnit = useMemo(() => (unit ? UNITS[UNITS.findIndex((u) => u.id === unit.id) + 1] : undefined), [unit]);
@@ -108,7 +109,7 @@ export function LessonPlayer() {
 
           {step.k === "card" && (
             <div className="flex flex-col gap-5">
-              <button type="button" onClick={() => { setFlipped((f) => !f); void speak(step.w.tt); }} className="h-64 [perspective:1000px]" aria-label="flip">
+              <button type="button" onClick={() => { swoosh(); setFlipped((f) => !f); void speak(step.w.tt); }} className="h-64 [perspective:1000px]" aria-label="flip">
                 <motion.div className="relative h-full [transform-style:preserve-3d]" animate={{ rotateY: flipped ? 180 : 0 }} transition={{ type: "spring", stiffness: 160, damping: 14 }}>
                   <div className="absolute inset-0 grid place-items-center rounded-card bg-gradient-to-br from-primary to-[#A9432F] p-6 text-primary-foreground [backface-visibility:hidden]">
                     <div><p lang="tt" className="font-display text-5xl font-bold">{tt(step.w.tt)}</p><p className="mt-3 flex items-center justify-center gap-2 text-sm opacity-80"><Volume2 className="size-4" />{pick({ ru: "нажми — переверни", en: "tap to flip" })}</p></div>
@@ -118,7 +119,7 @@ export function LessonPlayer() {
                   </div>
                 </motion.div>
               </button>
-              <Button size="lg" className="h-14 text-lg" onClick={next}>{pick({ ru: "Запомнил", en: "Got it" })} <ArrowRight aria-hidden /></Button>
+              <Button size="lg" className="h-14 text-lg" onClick={() => { bump("review"); next(); }}>{pick({ ru: "Запомнил", en: "Got it" })} <ArrowRight aria-hidden /></Button>
             </div>
           )}
 
@@ -179,6 +180,17 @@ export function LessonPlayer() {
             <div className="flex flex-col items-center gap-5 py-4 text-center">
               <Bayem size={140} />
               <BayemSays tt="Афәрин!" sub={pick({ ru: `Этап «${unit.t.ru}» пройден! Ошибок: ${mistakes}.`, en: `Stage “${unit.t.en}” complete! Mistakes: ${mistakes}.` })} />
+              {STORIES[unit.id] && (
+                <Card className="w-full p-5 text-left">
+                  <p className="font-display font-bold">🎬 {pick({ ru: "Сценка", en: "Mini-story" })}</p>
+                  {STORIES[unit.id].map((l, k) => (
+                    <motion.p key={k} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + k * 1.2 }} className="mt-2">
+                      <button type="button" onClick={() => void speak(l.tt.replace(/^— /, ""))} lang="tt" className="font-bold italic text-primary">{l.tt}</button>
+                      <span className="block text-sm text-muted-foreground">{pick(l)}</span>
+                    </motion.p>
+                  ))}
+                </Card>
+              )}
               <Card className="w-full border-l-4 border-l-accent p-5 text-left">
                 <p className="font-display font-bold">☕ {pick({ ru: "А ты знал?", en: "Did you know?" })}</p>
                 <p className="mt-1">{pick(unit.fact)}</p>

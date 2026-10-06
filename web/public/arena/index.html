@@ -1,0 +1,733 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="/icon.svg"><title>Батыр Арена</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&family=Russo+One&display=swap">
+<style>
+/* Layout: one-screen fantasy arcade — HUD bar, painted arena (hero vs foe), question scroll below */
+:root{
+  --night:#170d2e; --plum:#2a1752; --gold:#ffc83d; --goldd:#b46a00; --ember:#ff5e3a; --jade:#2fe39a; --sky:#47b8ff; --rose:#ff4f8b; --ink:#fff6e6; --dim:#c3b4ee; --line:#2a1638;
+  --display:"Russo One","Rubik",system-ui,sans-serif; --body:"Rubik",system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);overflow-x:hidden}
+*{box-sizing:border-box}
+button{font-family:inherit;cursor:pointer;border:0;color:inherit;background:none}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.ic{display:inline-block;vertical-align:middle;flex:none}.ic svg{width:100%;height:100%;display:block}
+.sprite svg{width:100%;height:100%;display:block;overflow:visible}
+.app{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:12px 20px;min-height:100%;display:flex;flex-direction:column;gap:12px}
+.bgsky{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(900px 420px at 50% 115%,#ff5e3a40,transparent 60%),
+  radial-gradient(700px 400px at 90% -10%,#47b8ff33,transparent 60%),
+  linear-gradient(#170d2e,#2a1752 70%,#3b1a4f)}
+#stars{position:fixed;inset:0;z-index:-1;pointer-events:none}
+/* HUD */
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-size:24px;letter-spacing:1px;margin-right:auto;color:var(--gold);text-shadow:0 3px 0 var(--goldd),0 6px 14px #0008;-webkit-text-stroke:1px #6a3500}
+.chip{background:linear-gradient(#ffffff1c,#ffffff0a);border:2px solid #ffffff26;border-radius:999px;padding:5px 12px 5px 6px;font-weight:800;font-variant-numeric:tabular-nums;display:flex;gap:6px;align-items:center;box-shadow:inset 0 -3px 0 #0003}
+.chip.icon{padding:6px}
+/* buttons */
+.btn{font-family:var(--display);font-size:17px;padding:13px 20px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ background:linear-gradient(180deg,#ffe07a,#ff9f1c);color:#3a1600;box-shadow:0 6px 0 #b45a00,0 10px 22px #ff9f1c44,inset 0 2px 0 #fff8;transition:transform .08s,box-shadow .08s;text-shadow:0 1px 0 #fff6}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b45a00,inset 0 2px 0 #fff8}
+.btn.blue{background:linear-gradient(180deg,#8fdcff,#2a8cff);color:#04183a;box-shadow:0 6px 0 #1452a8,0 10px 22px #2a8cff44,inset 0 2px 0 #fff8}
+.btn.green{background:linear-gradient(180deg,#8ff8cc,#19c27a);color:#03301c;box-shadow:0 6px 0 #0d7a4b,0 10px 22px #19c27a44,inset 0 2px 0 #fff8}
+.btn.violet{background:linear-gradient(180deg,#d4a8ff,#8a4dff);color:#1a0640;box-shadow:0 6px 0 #4b1fa8,0 10px 22px #8a4dff55,inset 0 2px 0 #fff8}
+.btn[disabled]{filter:grayscale(.9) brightness(.55);cursor:not-allowed}
+.screen{display:flex;flex-direction:column;gap:14px;flex:1}
+h1{font-family:var(--display);font-size:clamp(32px,7.5vw,52px);line-height:1.02;margin:6px 0 0;text-wrap:balance;text-shadow:0 4px 0 #0007}
+h1 em{font-style:normal;color:var(--gold)}
+h2{font-family:var(--display);font-size:21px;margin:2px 0;text-wrap:balance}
+.sub{color:var(--dim);margin:0;max-width:60ch;line-height:1.5}
+.frame{background:linear-gradient(160deg,#3a2270ee,#21114aee);border:2px solid #6b4fb0;border-radius:22px;box-shadow:inset 0 0 0 2px #0004,0 12px 30px #0006;padding:14px;position:relative}
+.frame::before{content:"";position:absolute;inset:5px;border:1px dashed #ffc83d44;border-radius:17px;pointer-events:none}
+/* hero select */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:560px){.grid3{grid-template-columns:1fr}}
+.hcard{border-radius:22px;padding:10px 12px 14px;text-align:left;display:flex;flex-direction:column;gap:6px;transition:transform .15s;background:linear-gradient(170deg,var(--c1),var(--c2));border:3px solid #ffffff30;box-shadow:inset 0 -6px 0 #0003,0 10px 24px #0005;position:relative;overflow:hidden}
+.hcard::after{content:"";position:absolute;inset:0;background:radial-gradient(160px 120px at 50% 30%,#ffffff30,transparent 70%);pointer-events:none}
+.hcard:hover{transform:translateY(-4px)}
+.hcard.sel{border-color:var(--gold);box-shadow:0 0 0 4px #ffc83d55,0 14px 34px #ffc83d33}
+.hcard .sprite{height:150px;margin:0 auto;width:140px;animation:bob 2.4s ease-in-out infinite}
+.hcard b{font-family:var(--display);font-size:20px;text-shadow:0 2px 0 #0006}
+.hcard small{color:#fff;opacity:.85;line-height:1.4}
+.stats{display:flex;gap:6px;font-size:12px;font-weight:800;flex-wrap:wrap}
+.stats span{background:#0005;border-radius:9px;padding:3px 8px 3px 4px;display:inline-flex;gap:4px;align-items:center}
+/* map */
+.road{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media (max-width:560px){.road{grid-template-columns:repeat(3,1fr)}}
+.node{aspect-ratio:1;max-width:100%;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4b2f8a,#1d0f3d);border:4px solid #6b4fb0;display:grid;place-items:center;position:relative;box-shadow:inset 0 -6px 0 #0005,0 8px 18px #0006;transition:transform .15s}
+.node:not([disabled]):hover{transform:scale(1.06)}
+.node .sprite{width:78%;height:78%;margin-top:-6%}
+.node.done{border-color:var(--jade);background:radial-gradient(circle at 50% 35%,#1f8a5f,#0d3b2c)}
+.node.cur{border-color:var(--gold);animation:glow 1.6s ease-in-out infinite}
+.node.boss{border-width:5px}
+.node.boss::before{content:"БОСС";position:absolute;top:-8px;left:50%;transform:translateX(-50%);font:900 10px var(--body);background:var(--ember);padding:2px 7px;border-radius:8px;border:2px solid var(--line);z-index:2}
+.node.lock{filter:grayscale(1) brightness(.45);cursor:not-allowed}
+.node .lk{position:absolute;inset:0;display:grid;place-items:center}
+.node .tag{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-weight:800;font-size:11px;background:var(--line);border:2px solid #6b4fb0;padding:2px 8px;border-radius:9px;white-space:nowrap}
+.node .st{position:absolute;top:2px;right:-2px;display:flex}
+@keyframes glow{50%{box-shadow:0 0 0 6px #ffc83d44,0 0 34px #ffc83d88}}
+@keyframes bob{50%{transform:translateY(-7px)}}
+/* arena */
+.arena{position:relative;height:290px;border-radius:24px;overflow:hidden;border:3px solid #6b4fb0;box-shadow:0 14px 34px #0007}
+.arena .scene{position:absolute;inset:0;width:100%;height:100%}
+.fighter .sprite{width:min(190px,40vw);aspect-ratio:200/220;animation:bob 2.4s ease-in-out infinite}
+.fighter.r .sprite{animation-delay:-1.2s}
+.fighter.r.boss .sprite{width:min(225px,46vw)}
+.plate{display:flex;flex-direction:column;gap:3px;width:100%;max-width:200px;position:absolute;top:10px;z-index:3}
+.plate.l{left:12px}.plate.r{right:12px}
+.fw{position:absolute;bottom:8px;z-index:2;display:flex}.fw.l{left:3%}.fw.r{right:3%}
+.name{font-weight:900;font-size:13px;text-shadow:0 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hp{height:16px;background:#0009;border-radius:9px;overflow:hidden;border:2px solid var(--line);box-shadow:0 0 0 2px #ffffff30;position:relative}
+.hp i{display:block;height:100%;background:linear-gradient(#a6ff6b,#19c27a);transition:width .35s;box-shadow:inset 0 3px 0 #ffffff55}
+.plate.r .hp i{background:linear-gradient(#ff8a6b,#e0193f)}
+.hp em{position:absolute;inset:0;font-size:10px;font-style:normal;font-weight:900;display:grid;place-items:center;text-shadow:0 1px 0 #000;font-variant-numeric:tabular-nums}
+.hit{animation:hit .35s}
+@keyframes hit{20%{transform:translateX(-12px) rotate(-6deg);filter:brightness(2.6) saturate(0)}60%{transform:translateX(8px)}}
+.lunge-r{animation:lr .36s}.lunge-l{animation:ll .36s}
+@keyframes lr{50%{transform:translateX(70%) scale(1.08)}}
+@keyframes ll{50%{transform:translateX(-70%) scale(1.08)}}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translate(5px,-3px)}50%{transform:translate(-5px,3px)}75%{transform:translate(3px,2px)}}
+.dmg{position:absolute;font-family:var(--display);font-size:34px;z-index:6;pointer-events:none;-webkit-text-stroke:2px #2a1638;paint-order:stroke;animation:fly 1s forwards;white-space:nowrap}
+@keyframes fly{0%{transform:scale(.4)}20%{transform:scale(1.25)}100%{transform:translateY(-80px) scale(1);opacity:0}}
+.spark{position:absolute;z-index:5;pointer-events:none;width:10px;height:10px;border-radius:50%;background:radial-gradient(#fff,var(--c) 60%,transparent 70%);box-shadow:0 0 12px var(--c);animation:burst .65s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.slash{position:absolute;z-index:5;pointer-events:none;width:170px;height:170px;animation:slash .4s ease-out forwards}
+@keyframes slash{0%{transform:rotate(-40deg) scale(.6);opacity:0}30%{opacity:1}100%{transform:rotate(40deg) scale(1.1);opacity:0}}
+.proj{position:absolute;z-index:5;width:34px;height:34px;border-radius:50%;pointer-events:none;background:radial-gradient(#fff,var(--c) 45%,transparent 70%);box-shadow:0 0 24px var(--c)}
+.banner{position:absolute;inset:0;display:grid;place-items:center;z-index:7;font-family:var(--display);font-size:clamp(30px,7vw,48px);color:var(--gold);-webkit-text-stroke:2px #6a3500;paint-order:stroke;text-shadow:0 5px 0 #6a3500,0 10px 24px #000a;pointer-events:none;animation:pop 1s forwards}
+@keyframes pop{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.15);opacity:1}80%{opacity:1}100%{opacity:0}}
+.orb{animation:orb 1.4s ease-in-out infinite}@keyframes orb{50%{opacity:.7}}
+.glow{animation:orb 1s ease-in-out infinite}
+.float{animation:bob 3s ease-in-out infinite}
+.blink{animation:blink 4.5s infinite}@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+/* bars */
+.bars{display:flex;gap:10px;align-items:center}
+.energy{flex:1;height:14px;background:#0008;border-radius:9px;overflow:hidden;border:2px solid var(--line);box-shadow:0 0 0 2px #ffffff22}
+.energy i{display:block;height:100%;width:0;background:linear-gradient(90deg,#47b8ff,#b06bff);transition:width .3s;box-shadow:inset 0 3px 0 #ffffff55}
+.combo{font-family:var(--display);color:var(--gold);min-width:96px;text-align:right;-webkit-text-stroke:1px #6a3500}
+/* question */
+.qcard{display:flex;flex-direction:column;gap:10px}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--dim);font-size:13px;font-weight:700}
+.word{font-weight:900;font-size:clamp(30px,8vw,44px);text-align:center;margin:0;color:var(--ink);text-shadow:0 3px 0 #0008;letter-spacing:.5px}
+.timer{height:9px;background:#0007;border-radius:6px;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--ember),var(--gold))}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{background:linear-gradient(#ffffff26,#ffffff10);border:2px solid #ffffff35;border-radius:16px;padding:13px 10px;font-weight:800;font-size:16px;min-height:56px;box-shadow:inset 0 -4px 0 #0003;transition:transform .08s,background .15s}
+.opt:hover{background:linear-gradient(#ffffff3a,#ffffff18);transform:translateY(-2px)}
+.opt.ok{background:linear-gradient(#6ff5bf,#19c27a);border-color:#c6ffe6;color:#03301c}
+.opt.bad{background:linear-gradient(#ff7b95,#c2193f);border-color:#ffb3c2}
+.skill{display:flex;gap:10px;flex-wrap:wrap}.skill .btn{flex:1;min-width:150px;font-size:15px;padding:12px}
+.btn.ready{animation:ready 1s ease-in-out infinite}@keyframes ready{50%{box-shadow:0 6px 0 #4b1fa8,0 0 30px #b06bff}}
+/* shop & misc */
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px}
+.item{background:linear-gradient(170deg,#ffffff18,#ffffff06);border:2px solid #ffffff22;border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.item small{color:var(--dim)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.learned{display:flex;flex-wrap:wrap;gap:6px}
+.learned span{background:#2fe39a1f;border:1px solid #2fe39a66;border-radius:10px;padding:4px 9px;font-size:14px}
+.result{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.result .sprite{width:170px;height:186px}
+.rays{position:absolute;inset:-40%;background:repeating-conic-gradient(#ffc83d22 0 10deg,transparent 10deg 20deg);animation:spin 18s linear infinite;pointer-events:none;border-radius:50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result>*{position:relative}.result{overflow:hidden}
+.foot{color:var(--dim);font-size:12px;text-align:center}
+.conf{position:fixed;top:-12px;width:9px;height:14px;z-index:20;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(720deg)}}
+@media (max-width:480px){.arena{height:250px}.plate{max-width:150px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<div class="bgsky"></div>
+<canvas id="stars"></canvas>
+<div class="app">
+  <div class="top">
+    <a class="logo" href="/" style="text-decoration:none" title="На tatartel.ru">БАТЫР АРЕНА</a>
+    <div class="chip" title="Уровень героя"><span id="lvlic"></span><span id="lvl">1</span></div>
+    <div class="chip" title="Золото"><span id="goldic"></span><span id="gold">0</span></div>
+    <div class="chip" title="Выучено слов"><span id="bookic"></span><span id="wcount">0</span></div>
+    <button class="chip icon" id="snd" aria-label="Звук"></button>
+  </div>
+  <main id="view" class="screen"></main>
+  <div class="foot">Отвечай верно — бей сильнее. Быстрый ответ — критический удар. Слова из курса tatartel.ru</div>
+</div>
+
+<script>
+// ===== Нарисованные персонажи (SVG). viewBox 0 0 200 220, земля y≈208 =====
+const O = 'stroke="#2a1638" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"';
+const G = (id, a, b, x2 = 0, y2 = 1) => `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
+const R = (id, a, b) => `<radialGradient id="${id}" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient>`;
+const shadow = `<ellipse cx="100" cy="210" rx="62" ry="9" fill="#000" opacity=".28"/>`;
+const svg = (defs, body, vb = "0 0 200 220") => `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>${body}</svg>`;
+const eye = (x, y, r = 7, iris = "#2a1638") => `<g class="blink" style="transform-origin:${x}px ${y}px"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.2}" fill="#fff" ${O} stroke-width="2.5"/><circle cx="${x + r * .25}" cy="${y + r * .15}" r="${r * .62}" fill="${iris}"/><circle cx="${x + r * .45}" cy="${y - r * .2}" r="${r * .25}" fill="#fff"/></g>`;
+const cheek = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="4" fill="#ff7b8a" opacity=".55"/>`;
+// татарский орнамент-тюльпан
+const tulip = (x, y, s = 1, c = "#ffc83d") => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 8 C-7 2 -7 -6 -3 -9 C-2 -4 0 -3 0 -3 C0 -3 2 -4 3 -9 C7 -6 7 2 0 8Z" fill="${c}" stroke="#2a1638" stroke-width="1.5"/><path d="M0 8 L0 14" stroke="${c}" stroke-width="2"/></g>`;
+
+const SPR = {};
+
+SPR.batyr = () => svg(
+  G("bK", "#e2463a", "#9c1f2a") + G("bH", "#e9eef6", "#8d9bb3") + G("bB", "#f4f7fb", "#8e9ab0", 1, 0) + R("bS", "#ffd9b8", "#e9a77d"),
+  `${shadow}
+  <path d="M74 186 h20 v20 h-26 q0-10 6-20Z M108 186 h20 q6 10 6 20 h-26Z" fill="#5a2c1c" ${O}/>
+  <path d="M62 122 Q100 104 138 122 L150 194 Q100 206 50 194Z" fill="url(#bK)" ${O}/>
+  <path d="M100 112 V198" stroke="#ffc83d" stroke-width="5"/>
+  <rect x="55" y="150" width="90" height="14" rx="4" fill="#ffc83d" ${O} stroke-width="2.5"/>
+  ${[66, 82, 100, 118, 134].map(x => `<path d="M${x} 152 l5 5 l-5 5 l-5 -5Z" fill="#c0392b"/>`).join("")}
+  ${tulip(72, 180, .9)}${tulip(128, 180, .9)}
+  <path d="M60 128 Q42 150 52 168" fill="none" stroke="#9c1f2a" stroke-width="16" stroke-linecap="round"/>
+  <path d="M60 128 Q42 150 52 168" fill="none" ${O} stroke-width="0"/>
+  <circle cx="53" cy="170" r="9" fill="url(#bS)" ${O} stroke-width="2.5"/>
+  <g class="weapon">
+   <path d="M150 158 L184 52 L190 56 L160 162Z" fill="url(#bB)" ${O} stroke-width="2.5"/>
+   <path d="M184 52 L192 40 L190 56Z" fill="#fff" ${O} stroke-width="2"/>
+   <rect x="138" y="152" width="34" height="8" rx="3" transform="rotate(-20 155 156)" fill="#ffc83d" ${O} stroke-width="2.5"/>
+   <path d="M150 162 L144 182" stroke="#5a2c1c" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <path d="M140 128 Q156 140 152 160" fill="none" stroke="#9c1f2a" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="151" cy="160" r="9" fill="url(#bS)" ${O} stroke-width="2.5"/>
+  <circle cx="100" cy="80" r="38" fill="url(#bS)" ${O}/>
+  <path d="M68 92 Q70 132 100 136 Q130 132 132 92 Q122 108 100 104 Q78 108 68 92Z" fill="#6b3a1f" ${O}/>
+  <path d="M86 104 Q100 98 114 104" fill="none" stroke="#2a1638" stroke-width="3"/>
+  <path d="M90 110 Q100 116 110 110" fill="#c0392b" stroke="#2a1638" stroke-width="2.5"/>
+  ${eye(86, 82, 6.5)}${eye(114, 82, 6.5)}
+  <path d="M77 70 L94 73 M106 73 L123 70" stroke="#4a2614" stroke-width="5"/>
+  ${cheek(76, 94)}${cheek(124, 94)}
+  <path d="M60 72 Q100 2 140 72 Q100 60 60 72Z" fill="url(#bH)" ${O}/>
+  <path d="M58 72 Q100 58 142 72 L140 80 Q100 68 60 80Z" fill="#ffc83d" ${O} stroke-width="2.5"/>
+  <path d="M100 18 L100 6" stroke="#8d9bb3" stroke-width="5"/>
+  <path d="M100 8 Q120 -6 132 14 Q116 8 104 16Z" fill="#e2463a" ${O} stroke-width="2.5"/>
+  <circle cx="100" cy="66" r="5" fill="#2fe39a" ${O} stroke-width="2"/>`
+);
+
+SPR.sihr = () => svg(
+  G("sD", "#2fd08a", "#0f7a5a") + R("sS", "#ffe0c6", "#eeb08d") + R("sO", "#e9fbff", "#38b8ff") + G("sK", "#ffffff", "#d9cfee"),
+  `${shadow}
+  <path d="M70 70 Q48 120 58 170" fill="none" stroke="#2a1638" stroke-width="15" stroke-linecap="round"/>
+  <path d="M70 70 Q48 120 58 170" fill="none" stroke="#3b2240" stroke-width="10" stroke-linecap="round" stroke-dasharray="8 4"/>
+  <path d="M130 70 Q152 120 142 170" fill="none" stroke="#2a1638" stroke-width="15" stroke-linecap="round"/>
+  <path d="M130 70 Q152 120 142 170" fill="none" stroke="#3b2240" stroke-width="10" stroke-linecap="round" stroke-dasharray="8 4"/>
+  <circle cx="58" cy="174" r="5" fill="#ff4f8b" ${O} stroke-width="2"/><circle cx="142" cy="174" r="5" fill="#ff4f8b" ${O} stroke-width="2"/>
+  <path d="M70 120 L130 120 L158 204 Q100 212 42 204Z" fill="url(#sD)" ${O}/>
+  <path d="M46 192 L56 184 L66 192 L76 184 L86 192 L96 184 L106 192 L116 184 L126 192 L136 184 L146 192 L154 186" fill="none" stroke="#ffc83d" stroke-width="3"/>
+  ${tulip(100, 160, 1.2)}${tulip(74, 172, .8, "#ff4f8b")}${tulip(126, 172, .8, "#ff4f8b")}
+  <path d="M84 120 L100 140 L116 120" fill="#fff6e6" ${O} stroke-width="2.5"/>
+  <g class="weapon">
+   <path d="M160 200 L168 64" stroke="#7a4a26" stroke-width="7" stroke-linecap="round"/>
+   <path d="M160 200 L168 64" ${O} stroke-width="0"/>
+   <path d="M156 70 Q168 50 180 70" fill="none" stroke="#ffc83d" stroke-width="4"/>
+   <circle class="orb" cx="168" cy="52" r="15" fill="url(#sO)" ${O} stroke-width="2.5"/>
+   <circle cx="163" cy="47" r="4" fill="#fff"/>
+  </g>
+  <path d="M130 128 Q150 140 160 126" fill="none" stroke="#0f7a5a" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="162" cy="124" r="8" fill="url(#sS)" ${O} stroke-width="2.5"/>
+  <circle cx="100" cy="82" r="36" fill="url(#sS)" ${O}/>
+  <path d="M64 80 Q66 46 100 44 Q134 46 136 80 Q120 64 100 70 Q80 62 64 80Z" fill="#3b2240" ${O}/>
+  <path d="M68 58 Q100 18 132 58 Q100 46 68 58Z" fill="url(#sK)" ${O}/>
+  <path d="M70 58 Q100 48 130 58" fill="none" stroke="#ffc83d" stroke-width="4"/>
+  ${[78, 90, 100, 110, 122].map(x => `<circle cx="${x}" cy="${x === 100 ? 54 : 56}" r="2.6" fill="#ff4f8b"/>`).join("")}
+  <path d="M100 28 Q126 26 136 44" fill="none" stroke="#ffc83d" stroke-width="3"/><circle cx="137" cy="47" r="5" fill="#ffc83d" ${O} stroke-width="2"/>
+  ${eye(86, 86, 7.5, "#145a8a")}${eye(114, 86, 7.5, "#145a8a")}
+  <path d="M78 76 l-4 -4 M122 76 l4 -4" stroke="#2a1638" stroke-width="2.5"/>
+  ${cheek(76, 98)}${cheek(124, 98)}
+  <path d="M93 104 Q100 110 107 104" fill="none" stroke="#2a1638" stroke-width="3"/>`
+);
+
+SPR.uk = () => svg(
+  G("uC", "#4aa7ff", "#1d4fa8") + R("uS", "#ffd9b8", "#e6a47a") + G("uF", "#b07a4a", "#6b4426"),
+  `${shadow}
+  <path d="M120 96 L150 60 L158 66 L132 104Z" fill="#7a4a26" ${O} stroke-width="2.5"/>
+  ${[0, 8, 16].map(d => `<path d="M${146 + d * .4} ${62 - d * .2} l${4 + d * .3} -18" stroke="#2a1638" stroke-width="2.5"/><path d="M${150 + d * .7} ${44 - d * .2} l-4 -8 l8 2Z" fill="#ff5e3a" ${O} stroke-width="1.5"/>`).join("")}
+  <path d="M74 186 h20 v20 h-26 q0-10 6-20Z M108 186 h20 q6 10 6 20 h-26Z" fill="#3b2a1e" ${O}/>
+  <path d="M64 120 Q100 106 136 120 L146 196 Q100 206 54 196Z" fill="url(#uC)" ${O}/>
+  <path d="M100 112 L100 198" stroke="#fff6e6" stroke-width="7"/>
+  <path d="M100 112 L100 198" stroke="#d9c7a4" stroke-width="7" stroke-dasharray="3 5"/>
+  <rect x="58" y="152" width="84" height="10" rx="4" fill="#7a4a26" ${O} stroke-width="2.5"/>
+  ${tulip(76, 182, .9, "#fff6e6")}${tulip(124, 182, .9, "#fff6e6")}
+  <g class="weapon">
+   <path d="M170 76 Q206 140 168 200" fill="none" stroke="#7a4a26" stroke-width="7" stroke-linecap="round"/>
+   <path d="M170 76 Q206 140 168 200" fill="none" stroke="#ffc83d" stroke-width="2" stroke-dasharray="4 10"/>
+   <path d="M170 76 L168 200" stroke="#fff6e6" stroke-width="1.5"/>
+  </g>
+  <path d="M136 128 Q160 136 176 138" fill="none" stroke="#1d4fa8" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="178" cy="138" r="8" fill="url(#uS)" ${O} stroke-width="2.5"/>
+  <path d="M64 128 Q50 150 60 168" fill="none" stroke="#1d4fa8" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="61" cy="170" r="8" fill="url(#uS)" ${O} stroke-width="2.5"/>
+  <circle cx="100" cy="82" r="36" fill="url(#uS)" ${O}/>
+  <path d="M66 70 Q100 8 134 70Z" fill="#1d4fa8" ${O}/>
+  <path d="M62 66 Q100 52 138 66 L138 80 Q100 66 62 80Z" fill="url(#uF)" ${O}/>
+  ${[70, 84, 100, 116, 130].map(x => `<path d="M${x} 68 q3 6 0 10" stroke="#4a2c14" stroke-width="2" fill="none"/>`).join("")}
+  <path d="M100 26 Q118 14 126 30" fill="none" stroke="#ff5e3a" stroke-width="4"/>
+  ${eye(87, 90, 6.5)}${eye(115, 90, 6.5)}
+  <path d="M79 80 L94 82 M106 82 L121 80" stroke="#4a2614" stroke-width="3.5"/>
+  ${cheek(76, 102)}${cheek(124, 102)}
+  <path d="M92 106 Q102 112 110 105" fill="none" stroke="#2a1638" stroke-width="3"/>`
+);
+
+// ---------- противники (смотрят влево) ----------
+SPR.baka = () => svg(R("fG", "#9cf06a", "#2f9a3a") + R("fB", "#f8ffd0", "#c8e08a"),
+  `${shadow}
+  <path d="M40 200 Q30 186 50 182 L60 196Z M160 200 Q170 186 150 182 L140 196Z" fill="#2f9a3a" ${O}/>
+  <ellipse cx="100" cy="150" rx="66" ry="56" fill="url(#fG)" ${O}/>
+  <ellipse cx="100" cy="168" rx="40" ry="32" fill="url(#fB)" ${O} stroke-width="2.5"/>
+  ${[[70, 128], [128, 120], [140, 150], [62, 156]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#2f9a3a" opacity=".6"/>`).join("")}
+  <circle cx="72" cy="98" r="22" fill="url(#fG)" ${O}/><circle cx="128" cy="98" r="22" fill="url(#fG)" ${O}/>
+  ${eye(70, 98, 12, "#ffc83d")}${eye(126, 98, 12, "#ffc83d")}
+  <path d="M58 138 Q100 168 142 138" fill="#c2193f" ${O}/>
+  <path d="M86 150 Q96 176 80 186" fill="none" stroke="#ff4f8b" stroke-width="9" stroke-linecap="round"/>
+  <path d="M74 74 L80 60 L88 72 L96 56 L102 72" fill="#ffc83d" ${O} stroke-width="2.5"/>`);
+
+SPR.tolke = () => svg(G("xO", "#ffab4a", "#e0561c") + G("xT", "#ffab4a", "#c2410c", 1, 0),
+  `${shadow}
+  <path d="M120 180 Q196 190 182 120 Q176 96 160 110 Q170 160 120 166Z" fill="url(#xT)" ${O}/>
+  <path d="M172 112 Q180 98 166 98 Q158 106 164 118Z" fill="#fff6e6" ${O} stroke-width="2.5"/>
+  <path d="M64 206 Q56 140 100 120 Q144 140 136 206Z" fill="url(#xO)" ${O}/>
+  <path d="M84 206 Q80 160 100 146 Q120 160 116 206Z" fill="#fff6e6" ${O} stroke-width="2.5"/>
+  <path d="M56 54 L70 18 L92 52Z M110 52 L134 22 L142 58Z" fill="url(#xO)" ${O}/>
+  <path d="M64 50 L71 30 L82 48Z M118 50 L131 34 L134 54Z" fill="#2a1638"/>
+  <path d="M48 76 Q60 40 100 44 Q144 44 148 84 Q140 116 100 124 Q60 120 48 76Z" fill="url(#xO)" ${O}/>
+  <path d="M48 80 Q30 96 18 98 Q30 110 72 110 Q60 96 48 80Z" fill="#fff6e6" ${O}/>
+  <circle cx="18" cy="98" r="7" fill="#2a1638"/>
+  <g class="blink" style="transform-origin:76px 76px"><path d="M66 78 Q76 66 88 76 Q78 82 66 78Z" fill="#ffc83d" ${O} stroke-width="2.5"/><circle cx="78" cy="76" r="3" fill="#2a1638"/></g>
+  <g class="blink" style="transform-origin:116px 76px"><path d="M106 76 Q118 66 128 78 Q116 82 106 76Z" fill="#ffc83d" ${O} stroke-width="2.5"/><circle cx="116" cy="76" r="3" fill="#2a1638"/></g>
+  <path d="M40 104 Q50 110 60 104" fill="none" stroke="#2a1638" stroke-width="3"/>`);
+
+SPR.bure = () => svg(G("wG", "#a8b4d0", "#4d5878") + G("wD", "#6f7a98", "#2e3550"),
+  `${shadow}
+  <path d="M130 170 Q196 150 186 96 Q170 120 140 140Z" fill="url(#wD)" ${O}/>
+  <path d="M56 206 Q50 132 104 118 Q152 132 146 206Z" fill="url(#wG)" ${O}/>
+  <path d="M82 206 L86 158 L100 170 L114 156 L118 206" fill="#e6ebf5" ${O} stroke-width="2.5"/>
+  <path d="M62 52 L66 10 L94 44Z M112 44 L138 12 L144 56Z" fill="url(#wD)" ${O}/>
+  <path d="M56 70 Q60 36 104 38 Q148 42 150 84 Q140 120 100 124 Q64 118 56 70Z" fill="url(#wG)" ${O}/>
+  <path d="M60 78 Q30 84 10 96 Q20 116 74 116 Q66 100 60 78Z" fill="#e6ebf5" ${O}/>
+  <ellipse cx="12" cy="96" rx="8" ry="6" fill="#2a1638"/>
+  <path d="M26 112 L30 122 L34 112 M44 114 L48 124 L52 114" fill="#fff" stroke="#2a1638" stroke-width="2"/>
+  <path d="M66 62 L90 70 M116 70 L138 62" stroke="#2a1638" stroke-width="5"/>
+  <g class="blink" style="transform-origin:80px 78px"><path d="M68 80 Q80 68 92 80 Q80 86 68 80Z" fill="#ffd400" ${O} stroke-width="2.5"/><circle cx="80" cy="79" r="3" fill="#2a1638"/></g>
+  <g class="blink" style="transform-origin:124px 78px"><path d="M112 80 Q124 68 136 80 Q124 86 112 80Z" fill="#ffd400" ${O} stroke-width="2.5"/><circle cx="124" cy="79" r="3" fill="#2a1638"/></g>`);
+
+SPR.shurale = () => svg(G("tW", "#a77a4f", "#5a3a22") + R("tE", "#eaffb0", "#5fe34a"),
+  `${shadow}
+  <path d="M80 206 L84 160 M120 206 L116 160" stroke="#5a3a22" stroke-width="14" stroke-linecap="round"/>
+  <path d="M70 200 Q60 206 54 206 M130 200 Q140 206 148 206" stroke="#5a3a22" stroke-width="6" stroke-linecap="round"/>
+  <path d="M64 170 Q56 90 100 76 Q144 90 136 170 Q100 184 64 170Z" fill="url(#tW)" ${O}/>
+  ${[[84, 110], [116, 130], [92, 150]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="10" fill="#5a3a22" ${O} stroke-width="2"/>`).join("")}
+  <path d="M74 120 Q86 130 78 150 M124 104 Q114 116 122 128" fill="none" stroke="#5a3a22" stroke-width="3"/>
+  <path class="weapon" d="M70 112 Q30 120 18 96 M18 96 L2 82 M18 96 L0 98 M18 96 L4 112 M18 96 L10 74 M18 96 L14 118" fill="none" stroke="#5a3a22" stroke-width="8" stroke-linecap="round"/>
+  <path d="M130 112 Q170 130 182 108 M182 108 L198 96 M182 108 L198 112 M182 108 L192 124 M182 108 L188 88" fill="none" stroke="#5a3a22" stroke-width="8" stroke-linecap="round"/>
+  <path d="M70 90 Q60 50 100 40 Q140 50 130 90 Q100 104 70 90Z" fill="url(#tW)" ${O}/>
+  <path d="M96 42 Q90 14 104 -2 Q106 22 108 42Z" fill="#7a5232" ${O}/>
+  <path d="M60 52 Q74 34 86 46 M140 52 Q126 30 114 44" fill="none" stroke="#3f8f2e" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="58" cy="50" r="7" fill="#5fbf3a" ${O} stroke-width="2"/><circle cx="144" cy="54" r="8" fill="#5fbf3a" ${O} stroke-width="2"/>
+  <g class="blink" style="transform-origin:86px 68px"><circle cx="86" cy="68" r="9" fill="url(#tE)" ${O} stroke-width="2.5"/><circle cx="84" cy="68" r="3" fill="#123"/></g>
+  <g class="blink" style="transform-origin:114px 68px"><circle cx="114" cy="68" r="9" fill="url(#tE)" ${O} stroke-width="2.5"/><circle cx="112" cy="68" r="3" fill="#123"/></g>
+  <path d="M84 86 Q100 80 116 86 Q100 94 84 86Z" fill="#2a1638"/>
+  <path d="M92 86 L95 92 L98 86 M104 86 L107 92 L110 86" fill="#fff6e6"/>`);
+
+SPR.suanasy = () => svg(G("mT", "#3fe0c8", "#126e8a") + R("mS", "#e8fff4", "#a7d8c8") + G("mH", "#1f6b5a", "#0b2f3a"),
+  `${shadow}
+  <path d="M96 130 Q60 170 90 196 Q120 210 150 196 Q170 206 186 196 Q172 186 176 170 Q160 186 140 182 Q118 180 120 150Z" fill="url(#mT)" ${O}/>
+  ${[[100, 160], [112, 176], [128, 186], [96, 178]].map(([x, y]) => `<path d="M${x - 6} ${y} q6 -6 12 0" fill="none" stroke="#9ff6e6" stroke-width="2"/>`).join("")}
+  <path d="M120 70 Q160 110 150 180 Q130 150 128 120Z" fill="url(#mH)" ${O}/>
+  <path d="M76 140 Q72 110 100 102 Q126 110 122 140Z" fill="url(#mS)" ${O}/>
+  <path d="M82 120 Q92 128 100 120 Q108 128 118 120" fill="none" stroke="#ffc83d" stroke-width="4"/>
+  <g class="weapon"><path d="M78 118 Q56 104 50 86" fill="none" stroke="#a7d8c8" stroke-width="11" stroke-linecap="round"/>
+   <path d="M34 72 L66 72 L64 80 L36 80Z" fill="#ffc83d" ${O} stroke-width="2.5"/>
+   ${[38, 44, 50, 56, 62].map(x => `<path d="M${x} 80 v10" stroke="#ffc83d" stroke-width="3"/>`).join("")}</g>
+  <circle cx="100" cy="72" r="32" fill="url(#mS)" ${O}/>
+  <path d="M66 74 Q60 30 104 34 Q142 40 134 86 Q122 60 100 56 Q78 54 66 74Z" fill="url(#mH)" ${O}/>
+  <path d="M68 70 Q50 120 66 150" fill="none" stroke="#0b2f3a" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="122" cy="44" r="6" fill="#ff4f8b" ${O} stroke-width="2"/>
+  ${eye(86, 78, 6.5, "#0aa88a")}${eye(110, 78, 6.5, "#0aa88a")}
+  <path d="M92 94 Q98 98 104 93" fill="none" stroke="#2a1638" stroke-width="2.5"/>`);
+
+SPR.ayu = () => svg(R("aB", "#b98352", "#5b3418"),
+  `${shadow}
+  <ellipse cx="100" cy="160" rx="64" ry="50" fill="url(#aB)" ${O}/>
+  <ellipse cx="100" cy="170" rx="34" ry="30" fill="#d8ac7c" ${O} stroke-width="2.5"/>
+  <ellipse cx="54" cy="196" rx="20" ry="12" fill="url(#aB)" ${O}/><ellipse cx="146" cy="196" rx="20" ry="12" fill="url(#aB)" ${O}/>
+  <g class="weapon"><ellipse cx="40" cy="146" rx="16" ry="22" fill="url(#aB)" ${O}/>
+   <path d="M28 132 l-4 -8 M36 128 l-2 -9 M44 128 l1 -9" stroke="#fff6e6" stroke-width="3" stroke-linecap="round"/></g>
+  <circle cx="64" cy="54" r="18" fill="url(#aB)" ${O}/><circle cx="136" cy="54" r="18" fill="url(#aB)" ${O}/>
+  <circle cx="64" cy="54" r="8" fill="#d8ac7c"/><circle cx="136" cy="54" r="8" fill="#d8ac7c"/>
+  <circle cx="100" cy="88" r="44" fill="url(#aB)" ${O}/>
+  <ellipse cx="92" cy="108" rx="22" ry="16" fill="#d8ac7c" ${O} stroke-width="2.5"/>
+  <ellipse cx="88" cy="100" rx="8" ry="6" fill="#2a1638"/>
+  <path d="M80 114 Q90 120 100 114" fill="none" stroke="#2a1638" stroke-width="3"/>
+  <path d="M70 70 L88 78 M112 78 L128 70" stroke="#2a1638" stroke-width="5"/>
+  ${eye(80, 84, 6, "#2a1638")}${eye(118, 84, 6, "#2a1638")}`);
+
+SPR.albasty = () => svg(R("lG", "#f4f0ff", "#9a8ccc") + G("lH", "#ffffff", "#c9c2e6"),
+  `<ellipse cx="100" cy="210" rx="50" ry="7" fill="#7a5cff" opacity=".35"/>
+  <g class="float"><path d="M50 100 Q48 40 100 34 Q152 40 150 100 L160 190 Q146 176 134 194 Q122 176 110 196 Q98 176 86 196 Q74 176 62 194 Q52 178 40 190Z" fill="url(#lG)" ${O} opacity=".95"/>
+  <path d="M56 70 Q40 140 30 176 M144 70 Q160 140 172 178 M70 50 Q56 120 54 170 M130 50 Q146 120 148 170" fill="none" stroke="url(#lH)" stroke-width="10" stroke-linecap="round"/>
+  <path class="weapon" d="M54 120 Q20 116 12 96 M12 96 l-8 -6 M12 96 l-10 2 M12 96 l-4 -10" fill="none" stroke="#c9c2e6" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="84" cy="88" rx="12" ry="15" fill="#2a1638"/><ellipse cx="118" cy="88" rx="12" ry="15" fill="#2a1638"/>
+  <circle class="glow" cx="84" cy="90" r="5" fill="#ff3d6b"/><circle class="glow" cx="118" cy="90" r="5" fill="#ff3d6b"/>
+  <path d="M86 122 Q100 134 116 122 Q100 146 86 122Z" fill="#2a1638"/></g>`);
+
+SPR.ubyr = () => svg(G("yC", "#6b2d8f", "#2a0f3e") + R("yS", "#cfe3c2", "#7f9a7a"),
+  `${shadow}
+  <path d="M46 206 Q40 120 100 96 Q160 120 154 206Z" fill="url(#yC)" ${O}/>
+  <path d="M46 206 L56 190 L66 206 L76 190 L86 206 L96 190 L106 206 L116 190 L126 206 L136 190 L146 206" fill="#2a0f3e" ${O} stroke-width="2"/>
+  <path d="M60 110 L40 60 L80 96 M140 110 L160 60 L120 96" fill="#2a0f3e" ${O}/>
+  <path d="M76 150 Q100 136 124 150 L118 186 Q100 194 82 186Z" fill="#c2193f" ${O} stroke-width="2.5"/>
+  <g class="weapon"><path d="M58 150 Q30 150 22 126" fill="none" stroke="#6b2d8f" stroke-width="14" stroke-linecap="round"/>
+   <path d="M22 126 l-8 -10 M22 126 l-12 -2 M22 126 l-2 -14" stroke="#7f9a7a" stroke-width="5" stroke-linecap="round"/></g>
+  <ellipse cx="100" cy="86" rx="34" ry="38" fill="url(#yS)" ${O}/>
+  <path d="M66 74 Q70 40 100 40 Q130 40 134 74 L120 60 L110 72 L100 56 L90 72 L80 60Z" fill="#1a0f22" ${O}/>
+  <path d="M74 78 L94 86 M106 86 L126 78" stroke="#1a0f22" stroke-width="5"/>
+  <circle class="glow" cx="86" cy="90" r="7" fill="#ff2a4a" ${O} stroke-width="2"/><circle class="glow" cx="114" cy="90" r="7" fill="#ff2a4a" ${O} stroke-width="2"/>
+  <path d="M82 108 Q100 120 118 108" fill="#2a1638" ${O} stroke-width="2"/>
+  <path d="M88 110 L91 120 L94 111 M106 111 L109 120 L112 110" fill="#fff" stroke="#2a1638" stroke-width="1.5"/>`);
+
+SPR.jen = () => svg(G("jB", "#6fd0ff", "#2a5cd6") + G("jS", "#9fe2ff", "#3b7cff"),
+  `<ellipse cx="100" cy="210" rx="40" ry="7" fill="#2a8cff" opacity=".35"/>
+  <g class="float">
+  <path d="M74 140 Q60 176 92 190 Q124 200 104 214 Q140 204 128 182 Q118 160 128 140Z" fill="url(#jS)" ${O}/>
+  <path d="M60 140 Q56 96 100 92 Q144 96 140 140 Q100 156 60 140Z" fill="url(#jB)" ${O}/>
+  <path d="M74 120 Q100 132 126 120" fill="none" stroke="#1a3a99" stroke-width="3"/>
+  <rect x="64" y="136" width="72" height="10" rx="4" fill="#ffc83d" ${O} stroke-width="2.5"/>
+  <g class="weapon"><path d="M62 112 Q34 110 30 86" fill="none" stroke="#2a5cd6" stroke-width="16" stroke-linecap="round"/>
+   <rect x="22" y="92" width="18" height="8" rx="3" fill="#ffc83d" ${O} stroke-width="2"/>
+   <circle class="orb" cx="28" cy="72" r="12" fill="#ffe36b" ${O} stroke-width="2.5"/></g>
+  <path d="M138 112 Q160 124 156 144" fill="none" stroke="#2a5cd6" stroke-width="16" stroke-linecap="round"/>
+  <rect x="146" y="128" width="18" height="8" rx="3" fill="#ffc83d" ${O} stroke-width="2"/>
+  <circle cx="100" cy="70" r="30" fill="url(#jB)" ${O}/>
+  <path d="M70 58 Q100 16 130 58 Q100 50 70 58Z" fill="#ff4f8b" ${O}/>
+  <path d="M100 22 Q112 4 118 18" fill="none" stroke="#2a1638" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="100" cy="46" r="6" fill="#2fe39a" ${O} stroke-width="2"/>
+  ${eye(88, 70, 6, "#ffc83d")}${eye(112, 70, 6, "#ffc83d")}
+  <path d="M78 60 L94 64 M106 64 L122 60" stroke="#1a3a99" stroke-width="4"/>
+  <path d="M86 86 Q100 96 114 84" fill="none" stroke="#2a1638" stroke-width="3"/>
+  <path d="M90 92 Q100 108 110 92" fill="#1a3a99" ${O} stroke-width="2"/></g>`);
+
+SPR.azhdaha = () => svg(G("dG", "#5fe07a", "#137a4a") + G("dW", "#ff8a5e", "#a8213a") + G("dB", "#fff3b0", "#ffc83d"),
+  `${shadow}
+  <path d="M120 120 Q170 40 196 70 Q178 80 186 100 Q164 96 168 120 Q148 112 140 136Z" fill="url(#dW)" ${O}/>
+  <path d="M140 170 Q196 180 192 140 Q188 128 180 140 Q178 160 140 156Z" fill="url(#dG)" ${O}/>
+  <path d="M184 136 L196 124 L192 142Z" fill="#a8213a" ${O} stroke-width="2"/>
+  <path d="M60 206 Q46 130 110 112 Q160 124 154 206Z" fill="url(#dG)" ${O}/>
+  <path d="M80 206 Q76 150 110 136 Q138 150 132 206Z" fill="url(#dB)" ${O} stroke-width="2.5"/>
+  ${[150, 166, 182, 196].map(y => `<path d="M${84 + (y - 150) * .06} ${y} Q108 ${y + 6} ${130 - (y - 150) * .02} ${y}" fill="none" stroke="#c99a1d" stroke-width="2.5"/>`).join("")}
+  <path d="M70 130 Q40 110 60 70 Q76 96 92 114Z" fill="url(#dW)" ${O}/>
+  ${[[100, 112], [118, 108], [136, 116]].map(([x, y]) => `<path d="M${x - 6} ${y} L${x} ${y - 14} L${x + 6} ${y}Z" fill="#ff5e3a" ${O} stroke-width="2"/>`).join("")}
+  <path d="M60 66 Q66 30 104 34 Q140 40 138 76 Q130 104 96 104 Q74 104 60 66Z" fill="url(#dG)" ${O}/>
+  <path d="M64 76 Q30 70 14 84 Q20 104 70 102Z" fill="url(#dG)" ${O}/>
+  <path d="M18 94 L28 98 M34 98 L42 100" stroke="#2a1638" stroke-width="2.5"/>
+  <path d="M22 100 L26 108 L30 100 M44 101 L48 109 L52 101" fill="#fff" stroke="#2a1638" stroke-width="1.6"/>
+  <circle cx="24" cy="82" r="3" fill="#2a1638"/>
+  <path d="M100 36 Q104 4 124 0 Q112 18 114 38Z M120 44 Q138 18 156 20 Q140 34 132 54Z" fill="#fff3b0" ${O} stroke-width="2.5"/>
+  <path d="M72 58 L94 66" stroke="#2a1638" stroke-width="5"/>
+  <g class="blink" style="transform-origin:86px 70px"><path d="M74 72 Q86 58 98 72 Q86 78 74 72Z" fill="#ffd400" ${O} stroke-width="2.5"/><path d="M86 64 V78" stroke="#2a1638" stroke-width="3"/></g>`);
+
+// ---------- иконки ----------
+const IC = {
+  coin: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffc83d" stroke="#8a5300" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#c98a00" stroke-width="1.6"/><path d="M12 8 L13.5 12 L12 16 L10.5 12Z" fill="#8a5300"/></svg>`,
+  star: `<svg viewBox="0 0 24 24"><path d="M12 2 L14.9 8.6 L22 9.3 L16.6 14 L18.2 21 L12 17.3 L5.8 21 L7.4 14 L2 9.3 L9.1 8.6Z" fill="#ffc83d" stroke="#8a5300" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  starOff: `<svg viewBox="0 0 24 24"><path d="M12 2 L14.9 8.6 L22 9.3 L16.6 14 L18.2 21 L12 17.3 L5.8 21 L7.4 14 L2 9.3 L9.1 8.6Z" fill="#ffffff22" stroke="#ffffff55" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  book: `<svg viewBox="0 0 24 24"><path d="M3 5 Q8 3 12 6 Q16 3 21 5 V19 Q16 17 12 20 Q8 17 3 19Z" fill="#2fe39a" stroke="#0b5a3a" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6 V20" stroke="#0b5a3a" stroke-width="1.6"/></svg>`,
+  sword: `<svg viewBox="0 0 24 24"><path d="M19 2 L21 4 L9 16 L7 14Z" fill="#e9eef6" stroke="#3a4560" stroke-width="1.5"/><path d="M5 12 L11 18" stroke="#ffc83d" stroke-width="3" stroke-linecap="round"/><path d="M7 16 L3 20" stroke="#7a4a26" stroke-width="3" stroke-linecap="round"/></svg>`,
+  shield: `<svg viewBox="0 0 24 24"><path d="M12 2 L20 5 V11 Q20 18 12 22 Q4 18 4 11 V5Z" fill="#47b8ff" stroke="#123a7a" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 7 C9 9 9 13 12 15 C15 13 15 9 12 7Z" fill="#ffc83d"/></svg>`,
+  heart: `<svg viewBox="0 0 24 24"><path d="M12 21 C4 15 2 11 2 8 A5 5 0 0 1 12 6 A5 5 0 0 1 22 8 C22 11 20 15 12 21Z" fill="#ff4f8b" stroke="#7a0f33" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="8.5" r="1.6" fill="#fff" opacity=".7"/></svg>`,
+  hat: `<svg viewBox="0 0 24 24"><path d="M3 16 Q3 6 12 6 Q21 6 21 16Z" fill="#1d6b4a" stroke="#0b2f22" stroke-width="1.8"/><path d="M3 16 H21" stroke="#ffc83d" stroke-width="2.4"/><path d="M8 11 C7 9 9 8 9 8 C10 9 10 11 8 11Z M16 11 C15 9 17 8 17 8 C18 9 18 11 16 11Z M12 10 C11 8 13 7 13 7 C14 8 14 10 12 10Z" fill="#ffc83d"/></svg>`,
+  chak: `<svg viewBox="0 0 24 24"><path d="M3 14 Q12 4 21 14 Q20 20 12 21 Q4 20 3 14Z" fill="#e7a43a" stroke="#7a4300" stroke-width="1.6"/>${[[7, 13], [10, 11], [13, 12], [16, 13], [9, 16], [12, 15], [15, 16]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.8" fill="#ffd27a" stroke="#7a4300" stroke-width=".8"/>`).join("")}</svg>`,
+  lock: `<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2" fill="#b9a8e6" stroke="#2a1638" stroke-width="1.8"/><path d="M8 10 V7 A4 4 0 0 1 16 7 V10" fill="none" stroke="#2a1638" stroke-width="2"/></svg>`,
+  sound: `<svg viewBox="0 0 24 24"><path d="M4 9 H8 L13 5 V19 L8 15 H4Z" fill="#fff6e6" stroke="#2a1638" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 9 Q18 12 16 15 M18.5 7 Q22 12 18.5 17" fill="none" stroke="#fff6e6" stroke-width="2" stroke-linecap="round"/></svg>`,
+  mute: `<svg viewBox="0 0 24 24"><path d="M4 9 H8 L13 5 V19 L8 15 H4Z" fill="#fff6e6" stroke="#2a1638" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 9 L22 15 M22 9 L16 15" stroke="#ff4f8b" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  bolt: `<svg viewBox="0 0 24 24"><path d="M13 2 L4 14 H11 L10 22 L20 9 H13Z" fill="#7dd3ff" stroke="#123a7a" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  cup: `<svg viewBox="0 0 24 24"><path d="M6 3 H18 V9 A6 6 0 0 1 6 9Z" fill="#ffc83d" stroke="#8a5300" stroke-width="1.6"/><path d="M6 5 H3 Q3 10 7 11 M18 5 H21 Q21 10 17 11" fill="none" stroke="#8a5300" stroke-width="1.6"/><path d="M12 15 V19 M8 21 H16" stroke="#8a5300" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  crown: `<svg viewBox="0 0 24 24"><path d="M3 18 L4 7 L9 12 L12 5 L15 12 L20 7 L21 18Z" fill="#ffc83d" stroke="#8a5300" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="14" r="1.8" fill="#ff4f8b"/></svg>`,
+  shop: `<svg viewBox="0 0 24 24"><path d="M3 9 L5 4 H19 L21 9Z" fill="#ff5e3a" stroke="#2a1638" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 9 V20 H20 V9" fill="#fff6e6" stroke="#2a1638" stroke-width="1.6"/><rect x="9" y="13" width="6" height="7" fill="#47b8ff" stroke="#2a1638" stroke-width="1.4"/></svg>`,
+  swap: `<svg viewBox="0 0 24 24"><path d="M4 8 H18 L14 4 M20 16 H6 L10 20" fill="none" stroke="#fff6e6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  back: `<svg viewBox="0 0 24 24"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+const ic = (k, s = 20) => `<i class="ic" style="width:${s}px;height:${s}px">${IC[k]}</i>`;
+// SHA-1 на чистом JS: crypto.subtle недоступен на http-страницах
+function sha1(str) {
+  const bytes = new TextEncoder().encode(str);
+  const ml = bytes.length * 8;
+  const len = (((bytes.length + 8) >> 6) + 1) * 64;
+  const m = new Uint8Array(len);
+  m.set(bytes);
+  m[bytes.length] = 0x80;
+  const dv = new DataView(m.buffer);
+  dv.setUint32(len - 4, ml >>> 0);
+  dv.setUint32(len - 8, Math.floor(ml / 2 ** 32));
+  let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476, h4 = 0xc3d2e1f0;
+  const w = new Uint32Array(80);
+  const rol = (x, n) => (x << n) | (x >>> (32 - n));
+  for (let o = 0; o < len; o += 64) {
+    for (let i = 0; i < 16; i++) w[i] = dv.getUint32(o + i * 4);
+    for (let i = 16; i < 80; i++) w[i] = rol(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
+    let a = h0, b = h1, c = h2, d = h3, e = h4;
+    for (let i = 0; i < 80; i++) {
+      const [f, k] =
+        i < 20 ? [(b & c) | (~b & d), 0x5a827999] :
+        i < 40 ? [b ^ c ^ d, 0x6ed9eba1] :
+        i < 60 ? [(b & c) | (b & d) | (c & d), 0x8f1bbcdc] : [b ^ c ^ d, 0xca62c1d6];
+      const t = (rol(a, 5) + f + e + k + w[i]) >>> 0;
+      e = d; d = c; c = rol(b, 30) >>> 0; b = a; a = t;
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+  }
+  return [h0, h1, h2, h3, h4].map((x) => x.toString(16).padStart(8, "0")).join("");
+}
+
+let VOICE=true;
+function say(t){if(!VOICE)return;try{const a=new Audio("/audio/site/"+sha1(t.trim()).slice(0,12)+".mp3");a.play().catch(()=>{})}catch(e){}}
+
+</script>
+<script>
+// ---------- данные ----------
+const W=[["сәлам","привет"],["рәхмәт","спасибо"],["әйе","да"],["юк","нет"],["су","вода"],["икмәк","хлеб"],["сөт","молоко"],["чәй","чай"],["бал","мёд"],["алма","яблоко"],["ит","мясо"],["өй","дом"],["ишек","дверь"],["тәрәзә","окно"],["урман","лес"],["елга","река"],["тау","гора"],["кояш","солнце"],["ай","луна"],["йолдыз","звезда"],["кар","снег"],["яңгыр","дождь"],["җил","ветер"],["чәчәк","цветок"],["агач","дерево"],["эт","собака"],["мәче","кошка"],["ат","лошадь"],["сыер","корова"],["кош","птица"],["балык","рыба"],["аю","медведь"],["бүре","волк"],["төлке","лиса"],["куян","заяц"],["әни","мама"],["әти","папа"],["әби","бабушка"],["бабай","дедушка"],["абый","старший брат"],["апа","старшая сестра"],["дус","друг"],["бала","ребёнок"],["кызыл","красный"],["яшел","зелёный"],["зәңгәр","синий"],["сары","жёлтый"],["ак","белый"],["кара","чёрный"],["бер","один"],["ике","два"],["өч","три"],["дүрт","четыре"],["биш","пять"],["ун","десять"],["зур","большой"],["кечкенә","маленький"],["яхшы","хороший"],["матур","красивый"],["көчле","сильный"],["баш","голова"],["кул","рука"],["аяк","нога"],["күз","глаз"],["йөрәк","сердце"],["көн","день"],["төн","ночь"],["иртә","утро"],["кич","вечер"],["бүген","сегодня"],["китап","книга"],["мәктәп","школа"],["шәһәр","город"],["авыл","деревня"],["юл","дорога"],["кылыч","меч"],["калкан","щит"],["батыр","богатырь"],["ут","огонь"],["таш","камень"]];
+const HEROES=[
+ {id:"batyr",name:"Батыр",desc:"Воин с кылычем. Больше всех здоровья.",hp:120,atk:14,skill:"Удар кылыча",mul:3,c1:"#c0392b",c2:"#5a1430",fx:"#ffc83d"},
+ {id:"sihr",name:"Сихерче",desc:"Волшебница. Каждое верное слово её лечит.",hp:90,atk:12,skill:"Огненная сфера",mul:4,c1:"#14a37a",c2:"#0b3b4a",fx:"#47b8ff"},
+ {id:"uk",name:"Укчы",desc:"Лучник. Иногда стреляет дважды.",hp:100,atk:13,skill:"Град стрел",mul:3.5,c1:"#2a6fd6",c2:"#14204a",fx:"#ff5e3a"}];
+// небо, земля, оттенок силуэта для каждой локации
+const LOC={meadow:["#7fd6ff","#ffd9a0","#5fbf5a","#3a8a3e"],forest:["#2b5b6b","#8fc9a0","#2f6b3a","#1d4a2a"],river:["#4fa0e0","#bfe8ff","#3a9a8a","#1f6b6a"],night:["#1a1040","#5a3a8a","#3b2a5a","#24183e"],sunset:["#ff8a5e","#ffd27a","#8a4a3a","#5a2a2a"]};
+const STAGES=[
+ {k:"baka",n:"Бака",ru:"Лягушка-болтушка",hp:50,atk:6,t:12,loc:"meadow",fx:"#2fe39a"},
+ {k:"tolke",n:"Төлке",ru:"Хитрая лиса",hp:65,atk:7,t:12,loc:"meadow",fx:"#ff9f1c"},
+ {k:"bure",n:"Бүре",ru:"Серый волк",hp:80,atk:9,t:11,loc:"forest",fx:"#c3b4ee"},
+ {k:"shurale",n:"Шүрәле",ru:"Лесной дух из поэмы Тукая",hp:100,atk:10,t:11,boss:1,loc:"forest",fx:"#9cf06a"},
+ {k:"suanasy",n:"Су анасы",ru:"Водяная хозяйка",hp:115,atk:11,t:10,loc:"river",fx:"#3fe0c8"},
+ {k:"ayu",n:"Аю",ru:"Медведь-шатун",hp:135,atk:12,t:10,loc:"forest",fx:"#ff9f1c"},
+ {k:"albasty",n:"Албасты",ru:"Ночной дух",hp:150,atk:13,t:9,loc:"night",fx:"#c3b4ee"},
+ {k:"ubyr",n:"Убыр",ru:"Упырь из сказок",hp:170,atk:14,t:9,boss:1,loc:"night",fx:"#ff2a4a"},
+ {k:"jen",n:"Җен",ru:"Джинн",hp:190,atk:15,t:8,loc:"sunset",fx:"#47b8ff"},
+ {k:"azhdaha",n:"Аждаһа",ru:"Дракон Казани",hp:240,atk:17,t:8,boss:1,loc:"sunset",fx:"#ff5e3a"}];
+const SHOP=[
+ {id:"sword",ic:"sword",n:"Острый кылыч",d:"+4 к атаке",p:60},
+ {id:"shield",ic:"shield",n:"Калкан",d:"−20% урона по тебе",p:80},
+ {id:"heart",ic:"heart",n:"Йөрәк",d:"+20 к здоровью",p:70},
+ {id:"tub",ic:"hat",n:"Тюбетейка мудрости",d:"+2 секунды на ответ",p:90},
+ {id:"chak",ic:"chak",n:"Чәк-чәк",d:"Лечит 40 здоровья в бою",p:25}];
+
+// ---------- сохранение ----------
+const KEY="batyr.arena.v1";
+let S={hero:null,lvl:1,xp:0,gold:0,stage:0,stars:{},items:{},learned:{},chak:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const view=$("#view");
+const sp=(k,cls="")=>`<div class="sprite ${cls}">${SPR[k]()}</div>`;
+$("#lvlic").innerHTML=ic("star",22);$("#goldic").innerHTML=ic("coin",22);$("#bookic").innerHTML=ic("book",22);
+function hud(){$("#lvl").textContent=S.lvl;$("#gold").textContent=S.gold;$("#wcount").textContent=Object.keys(S.learned).length}
+
+// ---------- сцена: небо, Казанский кремль, земля с орнаментом ----------
+function scene(loc){
+  const [s1,s2,g1,g2]=LOC[loc];
+  const kremlin=`<g fill="#00000055">
+   <rect x="0" y="150" width="800" height="40"/>
+   ${[60,180,300,520,640,760].map(x=>`<rect x="${x-14}" y="128" width="28" height="30"/><path d="M${x-18} 130 L${x} 104 L${x+18} 130Z"/>`).join("")}
+   <rect x="372" y="112" width="56" height="40"/><rect x="380" y="86" width="40" height="28"/><rect x="388" y="64" width="24" height="24"/><rect x="393" y="48" width="14" height="18"/><path d="M392 50 L400 12 L408 50Z"/>
+   <path d="M560 150 Q560 92 600 86 Q640 92 640 150Z"/><path d="M590 88 L600 60 L610 88Z"/>
+   ${[540,660].map(x=>`<rect x="${x-5}" y="70" width="10" height="82"/><path d="M${x-7} 72 L${x} 34 L${x+7} 72Z"/>`).join("")}
+   <path d="M170 150 Q170 112 200 108 Q230 112 230 150Z"/><path d="M196 110 L200 86 L204 110Z"/></g>`;
+  return `<svg class="scene" viewBox="0 0 800 290" preserveAspectRatio="xMidYMax slice"><defs>
+   <linearGradient id="sk${loc}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s1}"/><stop offset="1" stop-color="${s2}"/></linearGradient>
+   <linearGradient id="gr${loc}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${g1}"/><stop offset="1" stop-color="${g2}"/></linearGradient>
+   <radialGradient id="sun${loc}"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#fff6c0"/><stop offset="1" stop-color="#fff6c000"/></radialGradient></defs>
+   <rect width="800" height="290" fill="url(#sk${loc})"/>
+   <circle cx="660" cy="56" r="70" fill="url(#sun${loc})" opacity=".8"/>
+   ${loc==="night"?[...Array(30)].map((_,i)=>`<circle cx="${(i*137)%800}" cy="${(i*53)%120}" r="${1+i%2}" fill="#fff" opacity=".8"/>`).join(""):""}
+   <path d="M0 170 Q120 120 240 160 T480 150 T800 140 V290 H0Z" fill="${g2}" opacity=".55"/>
+   ${kremlin}
+   <path d="M0 200 Q200 178 400 196 T800 190 V290 H0Z" fill="url(#gr${loc})"/>
+   <path d="M0 236 Q400 222 800 236" stroke="#ffffff22" stroke-width="2" fill="none"/>
+   ${[...Array(9)].map((_,i)=>`<g transform="translate(${50+i*90} 262) scale(1.1)" opacity=".35"><path d="M0 8 C-7 2 -7 -6 -3 -9 C-2 -4 0 -3 0 -3 C0 -3 2 -4 3 -9 C7 -6 7 2 0 8Z" fill="#ffc83d"/></g>`).join("")}
+   ${loc==="forest"?[30,130,700,770].map(x=>`<path d="M${x} 205 L${x-26} 205 L${x} 130 L${x+26} 205Z" fill="#0d2f1c" opacity=".8"/>`).join(""):""}
+   ${loc==="river"?`<path d="M0 214 Q200 204 400 216 T800 210 V226 Q600 220 400 228 T0 226Z" fill="#7fe0ff" opacity=".5"/>`:""}
+  </svg>`;
+}
+
+// ---------- звук ----------
+let AC=null,mute=false;
+function tone(f,d=.12,type="square",v=.07,slide=0){if(mute)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),AC.currentTime+d);g.gain.value=v;g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+const sfx={ok:()=>{tone(660,.08);setTimeout(()=>tone(990,.12),70)},bad:()=>tone(160,.25,"sawtooth",.09,-80),hit:()=>tone(120,.15,"triangle",.2,-60),crit:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.1),i*50))},win:()=>{[523,659,784,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.16,"triangle",.12),i*110))},lose:()=>{[392,330,262,196].forEach((f,i)=>setTimeout(()=>tone(f,.25,"sawtooth",.07),i*160))},click:()=>tone(880,.04,"sine",.05)};
+const sndBtn=$("#snd");const setSnd=()=>sndBtn.innerHTML=ic(mute?"mute":"sound",22);setSnd();
+sndBtn.onclick=()=>{mute=!mute;VOICE=!mute;setSnd()};
+
+// ---------- экраны ----------
+const hero=()=>HEROES.find(h=>h.id===S.hero);
+const stats=()=>{const h=hero();return{hp:h.hp+(S.items.heart||0)*20+(S.lvl-1)*8,atk:h.atk+(S.items.sword||0)*4+(S.lvl-1)*2,def:Math.min(.6,(S.items.shield||0)*.2),time:(S.items.tub||0)*2}};
+const stat=(k,v)=>`<span>${ic(k,16)}${v}</span>`;
+
+function pickHero(){
+  view.innerHTML=`<h1>Чудища крадут<br><em>татарские слова</em></h1>
+  <p class="sub">Выбери героя и верни слова! Каждый верный ответ — удар по врагу, ошибка — удар по тебе. Дойди до Казани и победи дракона Аждаһа.</p>
+  <div class="grid3">${HEROES.map(h=>`<button class="hcard ${S.hero===h.id?"sel":""}" data-h="${h.id}" style="--c1:${h.c1};--c2:${h.c2}">
+    ${sp(h.id)}<b>${h.name}</b><small>${h.desc}</small>
+    <div class="stats">${stat("heart",h.hp)}${stat("sword",h.atk)}${stat("bolt",h.skill)}</div></button>`).join("")}</div>
+  <div class="row"><button class="btn" id="go" ${S.hero?"":"disabled"}>В путь!</button></div>`;
+  view.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;save();sfx.click();pickHero()});
+  $("#go").onclick=()=>{sfx.click();mapView()};
+}
+
+function mapView(){
+  const h=hero(),st=stats();
+  view.innerHTML=`<div class="frame row" style="flex-wrap:nowrap">
+    <div class="sprite" style="width:84px;height:92px;flex:none">${SPR[h.id]()}</div>
+    <div style="min-width:0;flex:1;display:flex;flex-direction:column;gap:6px"><h2>${h.name} · уровень ${S.lvl}</h2>
+    <div class="stats">${stat("heart",st.hp)}${stat("sword",st.atk)}${stat("shield",Math.round(st.def*100)+"%")}</div>
+    <div class="energy" title="Опыт"><i style="width:${S.xp/(S.lvl*100)*100}%;background:linear-gradient(90deg,#ffc83d,#ff9f1c)"></i></div></div></div>
+  <div class="frame"><h2 style="margin-bottom:16px">Дорога в Казань</h2><div class="road">${STAGES.map((s,i)=>{
+    const cls=i<S.stage?"done":i===S.stage?"cur":"lock";const n=S.stars[i]||0;
+    return `<button class="node ${cls} ${s.boss?"boss":""}" data-i="${i}" ${i>S.stage?"disabled":""} aria-label="${s.n}">${sp(s.k)}
+      ${i>S.stage?`<span class="lk">${ic("lock",30)}</span>`:""}${n?`<span class="st">${ic("star",14).repeat(n)}</span>`:""}<span class="tag">${s.n}</span></button>`}).join("")}</div></div>
+  <div class="row"><button class="btn" id="fight">${ic("sword",20)} В бой</button><button class="btn blue" id="shopb">${ic("shop",20)} Базар</button><button class="btn green" id="wordsb">${ic("book",20)} Мои слова</button><button class="btn violet" id="heroB">${ic("swap",20)} Герой</button></div>`;
+  view.querySelectorAll(".node:not([disabled])").forEach(b=>b.onclick=()=>{sfx.click();battle(+b.dataset.i)});
+  $("#fight").onclick=()=>battle(Math.min(S.stage,STAGES.length-1));
+  $("#shopb").onclick=shopView;$("#wordsb").onclick=wordsView;$("#heroB").onclick=pickHero;hud();
+}
+
+function shopView(){
+  view.innerHTML=`<h2>Базар</h2><p class="sub">Золото дают за победы. Каждое следующее улучшение стоит дороже.</p>
+  <div class="shop">${SHOP.map(it=>{const have=it.id==="chak"?S.chak:(S.items[it.id]||0);const price=it.p*(it.id==="chak"?1:have+1);
+   return `<div class="item">${ic(it.ic,48)}<b>${it.n}</b><small>${it.d}</small><small>У тебя: ${have}</small><button class="btn" style="font-size:15px;padding:10px 14px" data-b="${it.id}" data-p="${price}" ${S.gold<price?"disabled":""}>${ic("coin",18)} ${price}</button></div>`}).join("")}</div>
+  <div class="row"><button class="btn blue" id="back">${ic("back",18)} К дороге</button></div>`;
+  view.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{const p=+b.dataset.p;if(S.gold<p)return;S.gold-=p;if(b.dataset.b==="chak")S.chak++;else S.items[b.dataset.b]=(S.items[b.dataset.b]||0)+1;save();sfx.win();hud();shopView()});
+  $("#back").onclick=mapView;hud();
+}
+function wordsView(){
+  const L=Object.keys(S.learned);
+  view.innerHTML=`<h2>Мои слова: ${L.length} из ${W.length}</h2>
+  <div class="frame">${L.length?`<div class="learned">${L.map(t=>`<span><b>${t}</b> — ${W.find(w=>w[0]===t)?.[1]||""}</span>`).join("")}</div>`:`<p class="sub">Пока пусто. Победи первого врага — и слова появятся здесь.</p>`}</div>
+  <div class="row"><button class="btn blue" id="back">${ic("back",18)} К дороге</button></div>`;$("#back").onclick=mapView;
+}
+
+// ---------- бой ----------
+let B=null;
+function battle(i){
+  const s=STAGES[i],st=stats(),h=hero();
+  B={i,s,ehp:s.hp,emax:s.hp,hp:st.hp,max:st.hp,atk:st.atk,def:st.def,time:s.t+st.time,combo:0,energy:0,errors:0,lock:false,q:null,timer:null,seen:[]};
+  view.innerHTML=`<div class="arena" id="arena">${scene(s.loc)}
+   <div class="plate l"><div class="name">${h.name} · ур. ${S.lvl}</div><div class="hp"><i id="php"></i><em id="phpt"></em></div></div>
+   <div class="plate r"><div class="name">${s.n} — ${s.ru}</div><div class="hp"><i id="ehp"></i><em id="ehpt"></em></div></div>
+   <div class="fw l fighter">${sp(h.id).replace('class="sprite ','id="ps" class="sprite ')}</div>
+   <div class="fw r fighter ${s.boss?"boss":""}">${sp(s.k).replace('class="sprite ','id="es" class="sprite ')}</div></div>
+  <div class="bars"><span style="font-size:13px;color:var(--dim);font-weight:800;display:flex;gap:4px;align-items:center">${ic("bolt",18)}Сила</span><div class="energy"><i id="en"></i></div><div class="combo" id="combo"></div></div>
+  <div class="frame qcard"><div class="qhead"><span id="qmode"></span><span id="qn"></span></div><button class="word" id="word" title="Послушать" style="width:100%"></button><div class="timer"><i id="tm"></i></div><div class="opts" id="opts"></div></div>
+  <div class="skill"><button class="btn violet" id="sk" disabled>${ic("bolt",20)} ${h.skill}</button><button class="btn green" id="ck" ${S.chak>0?"":"disabled"}>${ic("chak",22)} Чәк-чәк · ${S.chak}</button></div>`;
+  $("#word").onclick=()=>B&&say(B.q.w[0]);$("#sk").onclick=useSkill;$("#ck").onclick=eatChak;
+  banner(s.boss?"БОСС!":"В БОЙ!");upd();setTimeout(nextQ,800);
+}
+function upd(){
+  if(!$("#php"))return;
+  $("#php").style.width=Math.max(0,B.hp/B.max*100)+"%";$("#phpt").textContent=`${Math.max(0,Math.round(B.hp))} / ${B.max}`;
+  $("#ehp").style.width=Math.max(0,B.ehp/B.emax*100)+"%";$("#ehpt").textContent=`${Math.max(0,Math.round(B.ehp))} / ${B.emax}`;
+  $("#en").style.width=B.energy+"%";$("#sk").disabled=B.energy<100;$("#sk").classList.toggle("ready",B.energy>=100);
+  $("#combo").textContent=B.combo>1?`КОМБО ×${B.combo}`:"";
+}
+function nextQ(){
+  if(!B)return;
+  const pool=W.slice(0,Math.min(W.length,20+B.i*7));
+  let w,g=0;do{w=pool[Math.random()*pool.length|0]}while(B.seen.includes(w[0])&&++g<50);
+  B.seen.push(w[0]);if(B.seen.length>8)B.seen.shift();
+  const rev=Math.random()<.35;
+  const opts=[w];while(opts.length<4){const x=pool[Math.random()*pool.length|0];if(!opts.includes(x))opts.push(x)}
+  opts.sort(()=>Math.random()-.5);
+  B.q={w,rev,t0:performance.now()};B.lock=false;
+  $("#qmode").textContent=rev?"Как это по-татарски?":"Что значит это слово?";
+  $("#qn").textContent=`Сила врага: ${B.s.atk}`;
+  $("#word").textContent=rev?w[1]:w[0];if(!rev)say(w[0]);
+  $("#opts").innerHTML=opts.map(o=>`<button class="opt" data-k="${o[0]}">${rev?o[0]:o[1]}</button>`).join("");
+  $("#opts").querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(b));
+  const tm=$("#tm");tm.style.transition="none";tm.style.width="100%";requestAnimationFrame(()=>requestAnimationFrame(()=>{tm.style.transition=`width ${B.time}s linear`;tm.style.width="0%"}));
+  clearTimeout(B.timer);B.timer=setTimeout(()=>answer(null),B.time*1000);
+}
+function answer(btn){
+  if(!B||B.lock)return;B.lock=true;clearTimeout(B.timer);
+  const ok=btn&&btn.dataset.k===B.q.w[0];
+  $("#opts").querySelectorAll(".opt").forEach(b=>{if(b.dataset.k===B.q.w[0])b.classList.add("ok")});
+  if(btn&&!ok)btn.classList.add("bad");if(B.q.rev||!ok)say(B.q.w[0]);
+  const fast=(performance.now()-B.q.t0)/1000<B.time*.4;
+  if(ok){
+    S.learned[B.q.w[0]]=1;B.combo++;B.energy=Math.min(100,B.energy+(fast?34:22));
+    let d=B.atk*(1+Math.min(B.combo-1,5)*.15);if(fast)d*=1.8;
+    let dbl=S.hero==="uk"&&Math.random()<.25;if(dbl)d*=2;
+    if(S.hero==="sihr")B.hp=Math.min(B.max,B.hp+4);
+    sfx.ok();if(fast)sfx.crit();
+    attack(true,Math.round(d),fast?"КРИТ!":dbl?"×2":"",fast?"#ffc83d":"#fff6e6");
+  }else{
+    B.combo=0;B.errors++;sfx.bad();
+    const d=Math.round(B.s.atk*(1-B.def)*(B.s.boss?1.2:1));
+    setTimeout(()=>attack(false,d,btn?"":"Время!","#ff4f8b"),350);
+  }
+  upd();setTimeout(check,1400);
+}
+function attack(mine,d,label,color){
+  const f=$(mine?"#ps":"#es"),t=$(mine?"#es":"#ps"),a=$("#arena");if(!f||!a)return;
+  const h=hero();
+  const ar=a.getBoundingClientRect(),tr=t.getBoundingClientRect(),fr=f.getBoundingClientRect();
+  const tx=tr.left-ar.left+tr.width/2,ty=tr.top-ar.top+tr.height*.45;
+  const ranged=mine?S.hero!=="batyr":["albasty","jen","azhdaha","suanasy"].includes(B.s.k);
+  const fx=mine?h.fx:B.s.fx;
+  let delay=180;
+  if(ranged){
+    const p=document.createElement("div");p.className="proj";p.style.setProperty("--c",fx);
+    const sx=fr.left-ar.left+fr.width*(mine?.8:.2),sy=fr.top-ar.top+fr.height*.4;
+    p.style.left=sx-17+"px";p.style.top=sy-17+"px";a.appendChild(p);
+    p.animate([{transform:"translate(0,0) scale(.6)"},{transform:`translate(${tx-sx}px,${ty-sy}px) scale(1.2)`}],{duration:300,easing:"ease-in"});
+    setTimeout(()=>p.remove(),300);delay=300;
+    f.classList.remove("lunge-r","lunge-l");void f.offsetWidth;
+  }else{f.classList.remove("lunge-r","lunge-l");void f.offsetWidth;f.classList.add(mine?"lunge-r":"lunge-l")}
+  setTimeout(()=>{
+    if(!B)return;
+    t.classList.remove("hit");void t.offsetWidth;t.classList.add("hit");sfx.hit();
+    a.classList.remove("shake");void a.offsetWidth;a.classList.add("shake");
+    if(mine)B.ehp-=d;else B.hp-=d;
+    const sl=document.createElement("div");sl.className="slash";sl.style.left=tx-85+"px";sl.style.top=ty-85+"px";
+    sl.innerHTML=`<svg viewBox="0 0 100 100"><path d="M10 80 Q50 10 92 22" fill="none" stroke="${fx}" stroke-width="9" stroke-linecap="round"/><path d="M10 80 Q50 10 92 22" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
+    a.appendChild(sl);setTimeout(()=>sl.remove(),400);
+    float(`${label?label+" ":""}−${d}`,tx-30,ty-60,color);
+    sparks(tx,ty,fx);upd();
+  },delay);
+}
+function float(txt,x,y,color){const a=$("#arena");if(!a)return;const e=document.createElement("div");e.className="dmg";e.textContent=txt;x=Math.max(6,Math.min(x,a.clientWidth-txt.length*19));e.style.cssText=`left:${x}px;top:${y}px;color:${color}`;a.appendChild(e);setTimeout(()=>e.remove(),1000)}
+function sparks(x,y,c){const a=$("#arena");for(let k=0;k<14;k++){const e=document.createElement("div");e.className="spark";const ang=Math.random()*6.28,r=40+Math.random()*70;e.style.cssText=`left:${x-5}px;top:${y-5}px;--c:${k%3?c:"#fff6c0"};--dx:${Math.cos(ang)*r}px;--dy:${Math.sin(ang)*r}px`;a.appendChild(e);setTimeout(()=>e.remove(),650)}}
+function banner(t){const a=$("#arena");if(!a)return;const e=document.createElement("div");e.className="banner";e.textContent=t;a.appendChild(e);setTimeout(()=>e.remove(),1000)}
+function useSkill(){if(!B||B.energy<100||B.lock)return;B.lock=true;clearTimeout(B.timer);B.energy=0;const h=hero();sfx.crit();banner(h.skill.toUpperCase());
+  attack(true,Math.round(B.atk*h.mul),"СУПЕР","#47b8ff");upd();setTimeout(check,1200)}
+function eatChak(){if(!B||S.chak<1)return;S.chak--;B.hp=Math.min(B.max,B.hp+40);save();sfx.win();
+  const p=$("#ps").getBoundingClientRect(),a=$("#arena").getBoundingClientRect();float("+40",p.left-a.left+p.width/2-20,p.top-a.top+20,"#2fe39a");
+  $("#ck").disabled=true;$("#ck").innerHTML=`${ic("chak",22)} Чәк-чәк · ${S.chak}`;upd()}
+function check(){if(!B)return;if(B.ehp<=0)return finish(true);if(B.hp<=0)return finish(false);nextQ()}
+function finish(win){
+  clearTimeout(B.timer);const b=B;B=null;
+  if(win){
+    const stars=b.errors===0?3:b.errors<=2?2:1;
+    const gold=20+b.i*10+stars*10,xp=30+b.i*12;
+    S.gold+=gold;S.xp+=xp;S.stars[b.i]=Math.max(S.stars[b.i]||0,stars);
+    if(b.i===S.stage&&S.stage<STAGES.length-1)S.stage++;else if(b.i===STAGES.length-1)S.stage=STAGES.length-1;
+    let up=false;while(S.xp>=S.lvl*100){S.xp-=S.lvl*100;S.lvl++;up=true}
+    save();sfx.win();hud();
+    const final=b.i===STAGES.length-1;
+    view.innerHTML=`<div class="frame result"><div class="rays"></div>${sp(S.hero)}<h1>${final?"Казань спасена!":"Җиңү! Победа!"}</h1>
+     <div class="row" style="justify-content:center">${ic("star",40).repeat(stars)}${ic("starOff",40).repeat(3-stars)}</div>
+     <p class="sub">${b.s.n} повержен. ${ic("coin",18)} +${gold} · +${xp} опыта${up?` · <b style="color:var(--gold)">Новый уровень ${S.lvl}!</b>`:""}</p>
+     <div class="row" style="justify-content:center"><button class="btn" id="nx">${final?"К дороге":"Следующий бой"}</button><button class="btn blue" id="mp">Дорога</button></div></div>`;
+    confetti();
+    $("#nx").onclick=()=>final?mapView():battle(S.stage);$("#mp").onclick=mapView;
+  }else{
+    sfx.lose();S.gold+=5;save();hud();
+    view.innerHTML=`<div class="frame result">${sp(b.s.k)}<h1>Ой, не вышло</h1>
+     <p class="sub">${b.s.n} оказался сильнее. Купи снаряжение на базаре или повтори слова — и возвращайся. ${ic("coin",18)} +5 за смелость.</p>
+     <div class="row" style="justify-content:center"><button class="btn" id="rt">Ещё раз</button><button class="btn blue" id="sh">${ic("shop",20)} Базар</button><button class="btn green" id="mp">Дорога</button></div></div>`;
+    $("#rt").onclick=()=>battle(b.i);$("#sh").onclick=shopView;$("#mp").onclick=mapView;
+  }
+}
+function confetti(){const C=["#ffc83d","#ff4f8b","#2fe39a","#47b8ff","#ff5e3a","#b06bff"];for(let k=0;k<70;k++){const e=document.createElement("div");e.className="conf";e.style.cssText=`left:${Math.random()*100}vw;background:${C[k%6]};--dx:${(Math.random()-.5)*160}px;animation-duration:${1.6+Math.random()*1.6}s;animation-delay:${Math.random()*.5}s;border-radius:${k%2?"50%":"2px"}`;document.body.appendChild(e);setTimeout(()=>e.remove(),3800)}}
+
+// ---------- звёзды фона ----------
+(function(){const c=$("#stars"),x=c.getContext("2d");let st=[];function rs(){c.width=innerWidth;c.height=innerHeight;st=Array.from({length:70},()=>({x:Math.random()*c.width,y:Math.random()*c.height*.7,r:Math.random()*1.6+.3,p:Math.random()*6}))}rs();addEventListener("resize",rs);
+ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+ (function f(t){x.clearRect(0,0,c.width,c.height);st.forEach(s=>{x.globalAlpha=.3+.6*Math.abs(Math.sin(s.p+(reduce?0:t/900)));x.fillStyle="#fff6e6";x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()});if(!reduce)requestAnimationFrame(f)})(0)})();
+
+hud();S.hero?mapView():pickHero();
+</script>
+</body></html>

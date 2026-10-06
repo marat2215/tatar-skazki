@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { lessons, words, type Phrase, type Word } from "./content";
+import { bump as dbump } from "./daily";
 
 // Путь ученика: этапы от «Исәнмесез» до Сабантуя. Каждый этап = 5 минут:
 // слова темы → проверка → фразы → «а ты знал?».
@@ -51,6 +52,7 @@ function load(): PathState {
   try { return { done: [], ...(JSON.parse(localStorage.getItem(KEY) ?? "{}") as Partial<PathState>) }; } catch { return { done: [] }; }
 }
 export function completeUnit(id: string) {
+  dbump("dialog");
   const s = load();
   if (!s.done.includes(id)) s.done.push(id);
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* ignore */ }
@@ -63,3 +65,13 @@ export function usePath(): PathState | null {
 }
 /** Индекс текущего (первого непройденного) этапа */
 export const currentIndex = (done: string[]) => Math.max(0, UNITS.findIndex((u) => !done.includes(u.id)) === -1 ? UNITS.length - 1 : UNITS.findIndex((u) => !done.includes(u.id)));
+
+/** Микро-истории после этапа: короткая сценка, где ученик применяет фразы */
+export const STORIES: Record<string, { tt: string; ru: string; en: string }[]> = {
+  hello: [{ tt: "— Исәнме, улым!", ru: "Соседка-әби улыбается: «Здравствуй, сынок!»", en: "Your neighbour smiles: “Hello, son!”" }, { tt: "— Исәнмесез!", ru: "Ты отвечаешь вежливо — и получаешь яблоко 🍎", en: "You answer politely — and get an apple 🍎" }],
+  family: [{ tt: "— Бу — бабаең.", ru: "Әби открывает альбом: «Это твой дедушка».", en: "Grandma opens an album: “This is your grandpa”." }, { tt: "— Мин аны яратам.", ru: "Ты отвечаешь: «Я его люблю». Әби обнимает тебя 💛", en: "You say: “I love him”. Grandma hugs you 💛" }],
+  num: [{ tt: "— Ничә алма?", ru: "Продавец на базаре: «Сколько яблок?»", en: "The seller asks: “How many apples?”" }, { tt: "— Өч, рәхмәт!", ru: "«Три, спасибо!» — и он добавляет четвёртое в подарок.", en: "“Three, thanks!” — he adds a fourth as a gift." }],
+  food: [{ tt: "— Нәрсә телисез?", ru: "Ты в кафе. Официант: «Что желаете?»", en: "In a café the waiter asks: “What would you like?”" }, { tt: "— Чәк-чәк, рәхмәт.", ru: "«Чак-чак, спасибо». Официант улыбается ☕", en: "“Chak-chak, thank you.” The waiter smiles ☕" }],
+  home: [{ tt: "— Әйдәгез, чәй эчәбез!", ru: "Хозяйка: «Проходите, попьём чаю!»", en: "The host: “Come in, let's have tea!”" }, { tt: "— Рәхмәт!", ru: "Ты садишься к самовару. Пахнет бәлешем 🥧", en: "You sit by the samovar. It smells of bälesh 🥧" }],
+  sabantuy: [{ tt: "— Аша, кызым.", ru: "На Сабантуе бабушка протягивает чак-чак: «Ешь, дочка».", en: "At Sabantuy grandma offers chak-chak: “Eat, dear”." }, { tt: "— Рәхмәт, әби!", ru: "«Спасибо, бабушка!» — и Баем лезет на столб за призом 🐓", en: "“Thank you, grandma!” — and Bayem climbs the pole for the prize 🐓" }],
+};

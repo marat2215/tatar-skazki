@@ -4,23 +4,23 @@
 
 @layer base {
   :root {
-    /* Тёплая палитра «чаепитие у әби» */
-    --background: 37 72% 94%;      /* #FBF3E6 топлёное молоко */
-    --foreground: 22 29% 18%;      /* #3A2A20 крепкий чай */
-    --card: 36 100% 98%;
-    --card-foreground: 22 29% 18%;
-    --primary: 10 56% 51%;         /* #C8553D терракота */
-    --primary-foreground: 36 100% 98%;
-    --accent: 38 72% 55%;          /* #E0A43A золото */
-    --accent-foreground: 22 29% 18%;
-    --muted: 35 50% 89%;
-    --muted-foreground: 25 18% 42%;
-    --border: 35 45% 84%;
-    --input: 35 45% 84%;
-    --ring: 10 56% 51%;
-    --success: 158 61% 30%;        /* #1E7A5A изумруд */
-    --danger: 4 70% 50%;
-    --night: 213 51% 25%;          /* #1F3A5F ночная Казань */
+    /* Палитра TatarTel: терракота, золото, изумруд, глубокий синий, крем, бордо */
+    --background: 34 62% 89%;      /* #F5E6D3 кремовый */
+    --foreground: 214 52% 25%;     /* #1E3A5F глубокий синий — текст */
+    --card: 36 75% 96%;
+    --card-foreground: 214 52% 25%;
+    --primary: 16 49% 54%;         /* #C4704F терракота */
+    --primary-foreground: 36 75% 97%;
+    --accent: 31 53% 64%;          /* #D4A574 золото */
+    --accent-foreground: 214 52% 20%;
+    --muted: 33 50% 84%;
+    --muted-foreground: 214 25% 40%;
+    --border: 32 45% 80%;
+    --input: 32 45% 80%;
+    --ring: 16 49% 54%;
+    --success: 154 46% 33%;        /* #2E7D5B изумруд */
+    --danger: 0 41% 39%;           /* #8B3A3A бордовый */
+    --night: 214 52% 25%;
   }
   .dark {
     --background: 216 45% 15%;     /* вечер над Кабаном */

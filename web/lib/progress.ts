@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { bump as dbump } from "./daily";
 
 // Прогресс хранится в браузере ученика (localStorage) — без регистрации.
 export type Progress = {
@@ -42,7 +43,8 @@ function bump(p: Progress): Progress["days"] {
 
 export function markLearned(word: string) {
   const p = load();
-  if (p.learned.includes(word)) return save({ ...p, days: bump(p) });
+  if (p.learned.includes(word)) { dbump("review"); return save({ ...p, days: bump(p) }); }
+  dbump("new");
   save({ ...p, learned: [...p.learned, word], days: bump(p) });
 }
 

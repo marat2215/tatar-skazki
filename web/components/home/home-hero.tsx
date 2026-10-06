@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n";
 import { streakOf, useProgress } from "@/lib/progress";
 import { UNITS, currentIndex, usePath } from "@/lib/path";
+import { ding, purr } from "@/lib/sfx";
 
 // Реплика Баема зависит от времени суток и прогресса
 function greeting(hour: number, learned: number): { tt: string; ru: string; en: string } {
@@ -37,7 +38,7 @@ export function HomeHero() {
     <section className="mx-auto w-full max-w-content px-4 pb-6 pt-8 sm:px-6 lg:px-8">
       <div className="grid items-center gap-6 md:grid-cols-[auto_1fr_auto]">
         <div className="flex items-end gap-3 md:flex-col md:items-center">
-          <Bayem size={130} />
+          <button type="button" onClick={() => purr()} aria-label="Баем"><Bayem size={130} /></button>
           <BayemSays tt={g.tt} sub={locale === "tt" ? null : pick(g)} />
         </div>
 
@@ -48,7 +49,7 @@ export function HomeHero() {
           </h1>
           <p className="mt-3 text-lg text-muted-foreground">{pick({ ru: "Слова → фразы → диалоги. С живым голосом, играми и котом Баемом.", en: "Words → phrases → dialogues. With real voice, games and Bayem the cat." })}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-            <Button asChild size="lg" className="h-14 animate-[softpulse_2.6s_ease-in-out_infinite] px-8 text-lg">
+            <Button asChild size="lg" onMouseEnter={() => ding()} className="h-14 animate-[softpulse_2.6s_ease-in-out_infinite] px-8 text-lg">
               <Link href={`/lesson/?u=${cur.id}`}><Play className="!size-5" aria-hidden />{pick({ ru: "Начать урок", en: "Start lesson" })} · {cur.emoji} {cur.tt}</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-14 px-6 text-base">

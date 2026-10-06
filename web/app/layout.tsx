@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Lora, Noto_Sans, Nunito } from "next/font/google";
+import { Cormorant, Manrope, Noto_Sans } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
-const nunito = Nunito({ subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"], variable: "--font-nunito", display: "swap" });
-const lora = Lora({ subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"], weight: ["500", "700"], variable: "--font-lora", display: "swap" });
+const nunito = Manrope({ subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"], variable: "--font-nunito", display: "swap" });
+const lora = Cormorant({ subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"], weight: ["600", "700"], variable: "--font-lora", display: "swap" });
 // Noto Sans — запасной шрифт с полным набором татарских букв (ә ө ү җ ң һ)
 const noto = Noto_Sans({ subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"], weight: ["400", "600"], variable: "--font-noto", display: "swap" });
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBF3E6" },
+    { media: "(prefers-color-scheme: light)", color: "#F5E6D3" },
     { media: "(prefers-color-scheme: dark)", color: "#16233A" },
   ],
 };

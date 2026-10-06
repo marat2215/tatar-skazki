@@ -12,7 +12,7 @@ import { useI18n } from "@/lib/i18n";
 const NAV = [
   { href: "/#path", line: S.navLearn, ico: "🗺️" },
   { href: "/play/", line: S.navPlay, ico: "🎮" },
-  { href: "/#progress", line: S.navProgress, ico: "🔥" },
+  { href: "/achievements/", line: S.navProgress, ico: "🏅" },
   { href: "/#sections", line: S.navSections, ico: "📚" },
 ];
 
